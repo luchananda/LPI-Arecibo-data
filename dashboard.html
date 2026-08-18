@@ -8,24 +8,14 @@
   font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
   color: var(--text-primary); background: var(--page); padding: 24px; max-width: 1200px; margin: 0 auto;
 }
-:root[data-theme="dark"] .ao-dash {
-  --surface-1: #1a1a19; --page: #0d0d0d; --text-primary: #ffffff; --text-secondary: #c3c2b7;
-  --muted: #898781; --grid: #2c2c2a; --border: rgba(255,255,255,0.10);
-  --s1: #3987e5; --s2: #199e70; --s3: #c98500; --s4: #008300;
-  --s5: #9085e9; --s6: #e66767; --s7: #d55181; --s8: #d95926;
-  --link: #6fa8ea;
-}
-:root[data-theme="light"] .ao-dash {
-  --surface-1: #fcfcfb; --page: #f9f9f7; --text-primary: #0b0b0b; --text-secondary: #52514e;
-  --muted: #898781; --grid: #e1e0d9; --border: rgba(11,11,11,0.10);
-  --s1: #2a78d6; --s2: #1baf7a; --s3: #eda100; --s4: #008300;
-  --s5: #4a3aa7; --s6: #e34948; --s7: #e87ba4; --s8: #eb6834;
-  --link: #1c5cab;
-}
 .ao-dash * { box-sizing: border-box; }
 .ao-dash h1 { font-size: 22px; font-weight: 700; margin: 0 0 2px; }
 .ao-dash .subtitle { color: var(--text-primary); font-size: 11px; font-weight: 500; margin: 0 0 20px; }
 .ao-dash .subtitle a { color: #c9c7bd; }
+.ao-about { margin: -10px 0 20px; }
+.ao-about summary { font-size: 11.5px; color: var(--text-secondary); cursor: pointer; }
+.ao-about p { font-size: 11.5px; color: var(--text-secondary); line-height: 1.6; margin: 8px 0 0; max-width: 760px; }
+.ao-about a { color: #c9c7bd; }
 .ao-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 20px; }
 .ao-tile { background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
 .ao-tile .v { font-size: 24px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.15; }
@@ -110,6 +100,10 @@ tr.ao-row-click:hover .ao-name-link { text-decoration: underline; }
 <div class="ao-dash" data-palette="#2a78d6,#1baf7a,#eda100,#008300,#4a3aa7,#e34948,#e87ba4,#eb6834">
   <h1>Arecibo Observatory &mdash; Planetary Radar Object Catalog</h1>
   <p class="subtitle">1,039 solar system objects detected with the Arecibo planetary radar system, 1978&ndash;2020. Cross checked against <a href="https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html" target="_blank" rel="noopener">JPL Small-Body Database</a>, <a href="https://www.lpi.usra.edu/" target="_blank" rel="noopener">Lunar and Planetary Institute</a>, <a href="https://www.johnstonsarchive.net/" target="_blank" rel="noopener">Johnston&rsquo;s Archive</a>, and <a href="http://space.asu.cas.cz/~asteroid/binastdata.htm" target="_blank" rel="noopener">Pravec/Ondřejov</a> binary databases.</p>
+  <details class="ao-about">
+    <summary>About this dashboard</summary>
+    <p>This catalogs every object the Arecibo Observatory's planetary radar system detected between 1978 and its 2020 collapse &mdash; near-Earth and main-belt asteroids, comets, planets, moons, rings, and spacecraft. Every value on an object's card carries a hover citation showing exactly where it came from (the master catalogue, the LPI Asteroids Radar Archive, or a specific literature reference). Radar images are hosted in a companion <a href="https://github.com/luchananda/LPI-Arecibo-data" target="_blank" rel="noopener">GitHub data repository</a>, mostly harvested from the LPI Asteroids Radar Archive; a handful of public-domain/CC-licensed NASA and NRAO images fill in objects (mainly the planets) that don't have their own LPI imagery.</p>
+  </details>
 
   <div class="ao-stats">
     <div class="ao-tile"><div class="v">1,039</div><div class="l">Total objects</div></div>
@@ -278,8 +272,10 @@ tr.ao-row-click:hover .ao-name-link { text-decoration: underline; }
   // specific outside source rather than the LPI archive or master catalogue -
   // shown as that field's citation instead of the generic fallback.
   var MANUAL_FIELD_SOURCES = {
-    'Mercury': {'Diameter': 'NASA NSSDCA Planetary Fact Sheet', 'Rotation Period': 'NASA NSSDCA Planetary Fact Sheet'},
-    'Venus': {'Diameter': 'NASA NSSDCA Planetary Fact Sheet', 'Rotation Period': 'NASA NSSDCA Planetary Fact Sheet'},
+    'Mercury': {'Diameter': 'NASA NSSDCA Planetary Fact Sheet',
+      'Rotation Period': 'Pettengill & Dyce (1965), Nature 206, 1240 \u2014 the original Arecibo radar discovery of Mercury\u2019s 3:2 spin-orbit resonance; value refined to modern precision by NASA NSSDCA'},
+    'Venus': {'Diameter': 'NASA NSSDCA Planetary Fact Sheet',
+      'Rotation Period': 'Dyce, Pettengill & Shapiro (1967), The Astronomical Journal \u2014 Arecibo radar determination of Venus\u2019s (retrograde) rotation; value refined to modern precision by NASA NSSDCA'},
     'Mars': {'Diameter': 'NASA NSSDCA Planetary Fact Sheet', 'Rotation Period': 'NASA NSSDCA Planetary Fact Sheet'},
     'Saturn': {'Diameter': 'NASA NSSDCA Planetary Fact Sheet', 'Rotation Period': 'NASA NSSDCA Planetary Fact Sheet'},
     'P/1758 Y1': {'Rotation Period': 'Vega 1/2 + Giotto spacecraft flyby imagery, 1986'},
@@ -290,7 +286,7 @@ tr.ao-row-click:hover .ao-name-link { text-decoration: underline; }
     var p = info.physical || {};
     return {
       'Category': row.cat || null,
-      'Bodies': row.bodies > 1 ? row.bodies : null,
+      'Bodies': row.bodies >= 3 ? row.bodies + ' (triple)' : row.bodies === 2 ? '2 (binary)' : '1',
       'Absolute Magnitude (H)': row.h || null,
       'Quality Code': row.q || null,
       'Years Observed': row.yearsFull || row.years || null,
@@ -373,6 +369,16 @@ tr.ao-row-click:hover .ao-name-link { text-decoration: underline; }
       {src: CURATED_BASE + 'Saturn_rings_2001.png', type: 'Arecibo radar',
         caption: 'Arecibo OC and SC radar images of Saturn’s rings (December 2001) with east/west and near/far difference maps below, revealing an azimuthal brightness asymmetry. Credit: Nicholson et al. 2005, Icarus 177, 32–62.'},
     ],
+    'Mars': [
+      {src: CURATED_BASE + 'Mars_fig1_panorama.png', type: 'Arecibo radar',
+        caption: 'Depolarized (SC) radar image panorama of Mars covering the major volcanic regions (Elysium, Amazonis, Tharsis). Credit: Harmon et al. 2012, Icarus 220, 990\u20131030.'},
+      {src: CURATED_BASE + 'Mars_fig2_tharsis.png', type: 'Arecibo radar',
+        caption: 'Radar image of the Tharsis region, including Olympus Mons, from observations made November 17, 2005. Credit: Harmon et al. 2012, Icarus 220, 990\u20131030.'},
+      {src: CURATED_BASE + 'Mars_fig3_olympus.png', type: 'Arecibo radar',
+        caption: 'Radar image of Olympus Mons, summed from imagery taken October\u2013November 2005, with labeled surface features. Credit: Harmon et al. 2012, Icarus 220, 990\u20131030.'},
+      {src: CURATED_BASE + 'Mars_fig30_polratio.png', type: 'Arecibo radar',
+        caption: 'Circular polarization ratio map of Mars computed from OC and SC radar images (Nov 2005). Green shades (\u03bc\u1d04 = 0.80\u20131.15) mark most of the bright radar features. Credit: Harmon et al. 2012, Icarus 220, 990\u20131030.'},
+    ],
   };
   function openModal(target) {
     var row = DATA.filter(function(r) { return r.target === target; })[0] || {};
@@ -406,12 +412,6 @@ tr.ao-row-click:hover .ao-name-link { text-decoration: underline; }
     body += '<div class="ao-data-card"><div class="dc-title">Physical &amp; orbital data</div>' + fieldsHtml(fields, fieldSources, info) + '</div>';
     body += '</div>';
 
-    if (info.experiments && info.experiments.length) {
-      body += '<div class="ao-modal-section"><h4>Radar experiments (' + info.experiments.length + ')</h4>';
-      body += info.experiments.map(function(e) {
-        return '<div class="exp-row"><span>' + esc(e.date || '') + '</span><span>' + (e.pol_ratio ? 'Polarization ratio: ' + esc(e.pol_ratio) : '') + '</span></div>';
-      }).join('') + '</div>';
-    }
     var jplLabel = info.jpl_sbdb && info.jpl_sbdb.indexOf('ssd.jpl.nasa.gov') !== -1 ? 'JPL Small-Body Database' : 'NASA';
     var allRefs = (info.jpl_sbdb ? [{citation: jplLabel, url: info.jpl_sbdb}] : []).concat(info.references || []);
     if (allRefs.length) {
@@ -426,11 +426,14 @@ tr.ao-row-click:hover .ao-name-link { text-decoration: underline; }
       body += '</ul></div>';
     }
     var links = [];
-    if (info.jpl_sbdb) links.push('<a href="' + esc(info.jpl_sbdb) + '" target="_blank" rel="noopener">JPL SBDB</a>');
+    if (info.jpl_sbdb) {
+      var jplDesc = jplLabel === 'JPL Small-Body Database' ? 'NASA/JPL\u2019s official orbital and physical parameters database for this object' : 'NASA\u2019s overview page for this object';
+      links.push('<a href="' + esc(info.jpl_sbdb) + '" target="_blank" rel="noopener">' + esc(jplLabel) + '</a> (' + jplDesc + ')');
+    }
     if (info.n_images_total > (info.images || []).length) {
       links.push((info.n_images_total - info.images.length) + ' more image(s) preserved in the local archive (not shown here to keep page size manageable)');
     }
-    var prov = 'Physical data and images preserved from the LPI Asteroids Radar Archive.';
+    var prov = 'Physical data and images preserved from the <a href="https://www.lpi.usra.edu/resources/asteroids/" target="_blank" rel="noopener">LPI Asteroids Radar Archive</a>.';
     if (info.source_archive_url) {
       prov += ' <a href="' + esc(info.source_archive_url) + '" target="_blank" rel="noopener">Original source (Wayback Machine)</a>';
     }
