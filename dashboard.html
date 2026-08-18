@@ -22,6 +22,7 @@
 .ao-tile .l { font-size: 11.5px; color: var(--text-secondary); margin-top: 2px; }
 .ao-panel { background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; margin-bottom: 16px; }
 .ao-panel h2 { font-size: 13px; font-weight: 700; margin: 0 0 12px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .03em; }
+.ao-panel h2.ao-h2-lg { font-size: 19px; color: var(--text-primary); }
 .bar-row { display: grid; grid-template-columns: 90px 1fr 40px; align-items: center; gap: 10px; margin-bottom: 7px; }
 .bar-label { font-size: 12.5px; color: var(--text-secondary); text-align: right; }
 .bar-track { height: 16px; background: var(--grid); border-radius: 3px; overflow: hidden; }
@@ -42,7 +43,7 @@
 .ao-grid-cell.has-lpi { box-shadow: inset 0 0 0 1.5px rgba(255,255,255,0.85); }
 .ao-grid-cell.clickable { cursor: pointer; opacity: 1; }
 .ao-grid-cell.clickable:hover { outline: 2px solid #fff; outline-offset: 1px; z-index: 2; transform: scale(1.25); }
-.grid-legend { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 12px; font-size: 11.5px; color: var(--text-secondary); align-items: center; }
+.grid-legend { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 12px; font-size: 11.5px; color: var(--text-secondary); align-items: center; }
 .grid-legend .sw { display: inline-block; width: 10px; height: 13px; border-radius: 2px; margin-right: 5px; vertical-align: -2px; }
 .grid-legend .sw.lpi-demo { box-shadow: inset 0 0 0 1.5px rgba(255,255,255,0.85); }
 .grid-tip { position: fixed; background: #242422; border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; font-size: 11.5px; pointer-events: none; display: none; z-index: 1001; max-width: 260px; }
@@ -133,10 +134,10 @@ tr.ao-row-click:hover .ao-name-link { text-decoration: underline; }
   </div>
 
   <div class="ao-panel">
-    <h2>Objects by category</h2>
+    <h2 class="ao-h2-lg">Objects by category</h2>
     <div class="ao-grid-wrap" id="ao-grid-wrap">
-      <div class="ao-grid" id="ao-grid"></div>
       <div class="grid-legend" id="ao-grid-legend"></div>
+      <div class="ao-grid" id="ao-grid"></div>
       <div class="ao-count" style="margin-top:10px;">Each box is one object, colored by category; a white border means it has LPI radar data. Click a box to view full details.</div>
     </div>
   </div>
