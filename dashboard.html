@@ -38,7 +38,7 @@
 .toggle-btn { font-size: 11.5px; padding: 5px 12px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface-1); color: var(--text-secondary); cursor: pointer; }
 .toggle-btn.active { background: var(--s1); color: #fff; border-color: var(--s1); }
 .toggle-btn:disabled { opacity: .4; cursor: default; }
-.ao-grid { display: grid; grid-template-columns: repeat(60, 1fr); gap: 1.5px; }
+.ao-grid { display: grid; grid-template-columns: repeat(90, 1fr); gap: 1px; }
 .ao-grid-cell { aspect-ratio: 3 / 4; border-radius: 2px; cursor: default; position: relative; opacity: .45; transition: transform .06s ease; }
 .ao-grid-cell.has-lpi { box-shadow: inset 0 0 0 1.5px rgba(255,255,255,0.85); }
 .ao-grid-cell.clickable { cursor: pointer; opacity: 1; }
@@ -98,10 +98,7 @@ tr.ao-row-click:hover .ao-name-link { text-decoration: underline; }
 .ao-modal-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 9px 14px; }
 .ao-modal-field .fl { font-size: 10.2px; text-transform: uppercase; letter-spacing: .03em; color: var(--muted); }
 .ao-modal-field .fv { font-size: 12.8px; font-variant-numeric: tabular-nums; margin-top: 1px; }
-.fl-help { display: inline-flex; align-items: center; justify-content: center; width: 12px; height: 12px; border-radius: 50%; background: var(--s1); color: #fff; font-size: 8.5px; font-weight: 700; font-style: normal; text-transform: none; text-decoration: none; letter-spacing: 0; cursor: pointer; margin-left: 3px; vertical-align: 1px; }
-.fl-help:hover { background: var(--link); }
-.fl-help.fl-help-static { background: var(--muted); cursor: default; }
-.fl-help.fl-help-static:hover { background: var(--muted); }
+.fl-help { display: inline-flex; align-items: center; justify-content: center; width: 12px; height: 12px; border-radius: 50%; background: var(--muted); color: var(--surface-1); font-size: 8.5px; font-weight: 700; font-style: normal; text-transform: none; text-decoration: none; letter-spacing: 0; cursor: default; margin-left: 3px; vertical-align: 1px; }
 .ao-modal h4 { font-size: 11.5px; text-transform: uppercase; letter-spacing: .03em; color: var(--text-secondary); margin: 0 0 8px; }
 .ao-modal-section { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--grid); }
 .ao-modal .exp-row { font-size: 12.5px; padding: 5px 0; border-bottom: 1px solid var(--grid); display: flex; justify-content: space-between; gap: 10px; }
@@ -305,22 +302,22 @@ tr.ao-row-click:hover .ao-name-link { text-decoration: underline; }
   // (handled separately below), rather than as a "-" placeholder.
   var CARD_FIELD_ORDER = ['Category', 'Bodies', 'Absolute Magnitude (H)', 'Quality Code',
                           'Years Observed', 'Diameter', 'Rotation Period', 'Geometric Albedo'];
-  var POL_RATIO_DEF = 'Circular polarization ratio (SC/OC): the echo power in the same sense of ' +
+  var POL_RATIO_DEF = 'CPR (Circular Polarization Ratio, SC/OC): the echo power in the same sense of ' +
     'circular polarization as transmitted, divided by the opposite sense. Near 0 = smooth, ' +
     'single-bounce reflection; higher values (often exceeding 1) = rougher surface or more ' +
     'complex multiple scattering.';
   // per-object overrides where a field's value was manually researched from a
   // specific outside source rather than the LPI archive or master catalogue -
-  // shown as that field's citation instead of the generic fallback.
-  var NSSDCA = {text: 'NASA NSSDCA Planetary Fact Sheet', url: 'https://nssdc.gsfc.nasa.gov/planetary/factsheet/'};
+  // shown as that field's citation instead of the generic fallback. Short
+  // labels only - these are hover-only tooltips, not links (per her request:
+  // no click/navigation, just a quick "where did this come from" on hover).
+  var NSSDCA = 'NASA NSSDCA';
   var MANUAL_FIELD_SOURCES = {
-    'Mercury': {'Diameter': NSSDCA,
-      'Rotation Period': {text: 'Pettengill & Dyce (1965), Nature 206, 1240 \u2014 the original Arecibo radar discovery of Mercury\u2019s 3:2 spin-orbit resonance; value refined to modern precision by NASA NSSDCA', url: 'https://doi.org/10.1038/2061240a0'}},
-    'Venus': {'Diameter': NSSDCA,
-      'Rotation Period': {text: 'Dyce, Pettengill & Shapiro (1967), The Astronomical Journal \u2014 Arecibo radar determination of Venus\u2019s (retrograde) rotation; value refined to modern precision by NASA NSSDCA', url: 'https://doi.org/10.1086/110231'}},
+    'Mercury': {'Diameter': NSSDCA, 'Rotation Period': 'Arecibo radar (Pettengill & Dyce 1965)'},
+    'Venus': {'Diameter': NSSDCA, 'Rotation Period': 'Arecibo radar (Dyce, Pettengill & Shapiro 1967)'},
     'Mars': {'Diameter': NSSDCA, 'Rotation Period': NSSDCA},
     'Saturn': {'Diameter': NSSDCA, 'Rotation Period': NSSDCA},
-    'P/1758 Y1': {'Rotation Period': {text: 'Vega 1/2 + Giotto spacecraft flyby imagery, 1986', url: 'https://www.nature.com/articles/326573a0'}},
+    'P/1758 Y1': {'Rotation Period': 'Vega 1/2 + Giotto flyby, 1986'},
   };
   function buildFields(row, info) {
     var p = info.physical || {};
@@ -338,8 +335,8 @@ tr.ao-row-click:hover .ao-name-link { text-decoration: underline; }
   function buildFieldSources(row, info) {
     var p = info.physical || {};
     var manual = MANUAL_FIELD_SOURCES[row.target] || {};
-    var lpiSrc = {text: 'LPI Asteroids Radar Archive', url: info.source_archive_url || 'https://www.lpi.usra.edu/resources/asteroids/'};
-    var catalogSrc = {text: 'FSI Arecibo master catalogue (cross-checked vs JPL SBDB, Johnston\u2019s Archive, Pravec/Ond\u0159ejov)', url: row.link || null};
+    var lpiSrc = 'LPI \u2192 Arecibo Radar Team';
+    var catalogSrc = 'NASA SBDB';
     var fromLpi = {
       'Diameter': !!p['Diameter'], 'Rotation Period': !!p['Rotation period'], 'Geometric Albedo': !!p['Geometric Albedo'],
     };
@@ -362,10 +359,9 @@ tr.ao-row-click:hover .ao-name-link { text-decoration: underline; }
     }
     return { mean: mean, sd: sd, n: vals.length };
   }
-  function srcTag(src) {
-    if (!src) return '';
-    if (src.url) return ' <a class="fl-help" href="' + esc(src.url) + '" target="_blank" rel="noopener" title="Source (click to open): ' + esc(src.text) + '">i</a>';
-    return ' <span class="fl-help fl-help-static" title="Source: ' + esc(src.text) + '">i</span>';
+  function srcTag(text) {
+    if (!text) return '';
+    return ' <span class="fl-help" title="Source: ' + esc(text) + '">i</span>';
   }
   function fieldsHtml(fields, sources, info) {
     var html = '<div class="ao-modal-grid">' + CARD_FIELD_ORDER.map(function(k) {
@@ -375,8 +371,7 @@ tr.ao-row-click:hover .ao-name-link { text-decoration: underline; }
     var pr = polRatioStats(info);
     if (pr) {
       var valStr = pr.sd !== null ? pr.mean.toFixed(3) + ' &plusmn; ' + pr.sd.toFixed(3) : pr.mean.toFixed(3) + ' (n=1)';
-      var polSrcText = 'Computed from ' + pr.n + ' radar experiment' + (pr.n > 1 ? 's' : '') + ' in the LPI Asteroids Radar Archive. ' + POL_RATIO_DEF;
-      var polSrc = {text: polSrcText, url: info.source_archive_url || 'https://www.lpi.usra.edu/resources/asteroids/'};
+      var polSrc = POL_RATIO_DEF + ' (' + pr.n + ' measurement' + (pr.n > 1 ? 's' : '') + ' from LPI \u2192 Arecibo Radar Team)';
       html += '<div class="ao-modal-field"><div class="fl">Avg. Polarization Ratio' + srcTag(polSrc) + '</div><div class="fv">' + valStr + '</div></div>';
     }
     return html + '</div>';
