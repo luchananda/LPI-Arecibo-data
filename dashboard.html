@@ -1,21 +1,12 @@
 <style>
 .ao-dash {
-  --surface-1: #fcfcfb; --page: #f9f9f7; --text-primary: #0b0b0b; --text-secondary: #52514e;
-  --muted: #898781; --grid: #e1e0d9; --border: rgba(11,11,11,0.10);
-  --s1: #2a78d6; --s2: #1baf7a; --s3: #eda100; --s4: #008300;
-  --s5: #4a3aa7; --s6: #e34948; --s7: #e87ba4; --s8: #eb6834;
-  --good: #0ca30c; --link: #1c5cab;
+  --surface-1: #1a1a19; --page: #0d0d0d; --text-primary: #ffffff; --text-secondary: #c3c2b7;
+  --muted: #898781; --grid: #2c2c2a; --border: rgba(255,255,255,0.10);
+  --s1: #3987e5; --s2: #199e70; --s3: #c98500; --s4: #008300;
+  --s5: #9085e9; --s6: #e66767; --s7: #d55181; --s8: #d95926;
+  --good: #0ca30c; --link: #6fa8ea;
   font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
   color: var(--text-primary); background: var(--page); padding: 24px; max-width: 1200px; margin: 0 auto;
-}
-@media (prefers-color-scheme: dark) {
-  .ao-dash {
-    --surface-1: #1a1a19; --page: #0d0d0d; --text-primary: #ffffff; --text-secondary: #c3c2b7;
-    --muted: #898781; --grid: #2c2c2a; --border: rgba(255,255,255,0.10);
-    --s1: #3987e5; --s2: #199e70; --s3: #c98500; --s4: #008300;
-    --s5: #9085e9; --s6: #e66767; --s7: #d55181; --s8: #d95926;
-    --good: #0ca30c; --link: #6fa8ea;
-  }
 }
 :root[data-theme="dark"] .ao-dash {
   --surface-1: #1a1a19; --page: #0d0d0d; --text-primary: #ffffff; --text-secondary: #c3c2b7;
@@ -33,7 +24,8 @@
 }
 .ao-dash * { box-sizing: border-box; }
 .ao-dash h1 { font-size: 22px; font-weight: 700; margin: 0 0 2px; }
-.ao-dash .subtitle { color: var(--text-primary); font-size: 16px; font-weight: 500; margin: 0 0 20px; }
+.ao-dash .subtitle { color: var(--text-primary); font-size: 11px; font-weight: 500; margin: 0 0 20px; }
+.ao-dash .subtitle a { color: #c9c7bd; }
 .ao-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 20px; }
 .ao-tile { background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
 .ao-tile .v { font-size: 24px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.15; }
@@ -117,7 +109,7 @@ tr.ao-row-click:hover .ao-name-link { text-decoration: underline; }
 
 <div class="ao-dash" data-palette="#2a78d6,#1baf7a,#eda100,#008300,#4a3aa7,#e34948,#e87ba4,#eb6834">
   <h1>Arecibo Observatory &mdash; Planetary Radar Object Catalog</h1>
-  <p class="subtitle">1,039 solar system objects detected with the Arecibo planetary radar system, 1978&ndash;2020. Verified against JPL Small-Body Database, Johnston&rsquo;s Archive, and Pravec/Ondřejov binary databases.</p>
+  <p class="subtitle">1,039 solar system objects detected with the Arecibo planetary radar system, 1978&ndash;2020. Cross checked against <a href="https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html" target="_blank" rel="noopener">JPL Small-Body Database</a>, <a href="https://www.lpi.usra.edu/" target="_blank" rel="noopener">Lunar and Planetary Institute</a>, <a href="https://www.johnstonsarchive.net/" target="_blank" rel="noopener">Johnston&rsquo;s Archive</a>, and <a href="http://space.asu.cas.cz/~asteroid/binastdata.htm" target="_blank" rel="noopener">Pravec/Ondřejov</a> binary databases.</p>
 
   <div class="ao-stats">
     <div class="ao-tile"><div class="v">1,039</div><div class="l">Total objects</div></div>
@@ -138,7 +130,7 @@ tr.ao-row-click:hover .ao-name-link { text-decoration: underline; }
         <span class="bar-value">518</span>
       </div>
       <div class="bar-row">
-        <span class="bar-label">NEA/PHA</span>
+        <span class="bar-label">PHA</span>
         <div class="bar-track"><div class="bar-fill" style="--w:67.8%; --c:var(--s2);"></div></div>
         <span class="bar-value">351</span>
       </div>
