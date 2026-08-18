@@ -458,16 +458,17 @@ tr.ao-row-click:hover .ao-name-link { text-decoration: underline; }
     body += '<div class="ao-data-card"><div class="dc-title">Physical &amp; orbital data</div>' + fieldsHtml(fields, fieldSources, info) + '</div>';
     body += '</div>';
 
-    var jplLabel = info.jpl_sbdb && info.jpl_sbdb.indexOf('ssd.jpl.nasa.gov') !== -1 ? 'JPL Small-Body Database' : 'NASA';
-    var allRefs = (info.jpl_sbdb ? [{citation: jplLabel, url: info.jpl_sbdb}] : []).concat(info.references || []);
+    // References always shown in the same short "Author (Year)" format (same
+    // parsing already used in the table's compact Refs column), each linked
+    // to its DOI/URL - never the full long citation text.
+    var jplLabel = info.jpl_sbdb && info.jpl_sbdb.indexOf('ssd.jpl.nasa.gov') !== -1 ? 'JPL SBDB' : 'NASA';
+    var allRefs = (info.jpl_sbdb ? [{label: jplLabel, url: info.jpl_sbdb}] : []).concat(row.refs || []);
     if (allRefs.length) {
       body += '<div class="ao-modal-section"><h4>References (' + allRefs.length + ')</h4><ul class="pub-list">';
       body += allRefs.map(function(ref, i) {
-        var cit = ref.citation || '';
-        var url = ref.url;
         var num = allRefs.length > 1 ? '[' + (i + 1) + '] ' : '';
-        if (url) return '<li>' + num + esc(cit) + ' <a href="' + esc(url) + '" target="_blank" rel="noopener">' + esc(url) + '</a></li>';
-        return '<li>' + num + esc(cit) + '</li>';
+        if (ref.url) return '<li>' + num + '<a href="' + esc(ref.url) + '" target="_blank" rel="noopener">' + esc(ref.label) + '</a></li>';
+        return '<li>' + num + esc(ref.label) + '</li>';
       }).join('');
       body += '</ul></div>';
     }
