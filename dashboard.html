@@ -98,7 +98,7 @@ tr.ao-row-click:hover .ao-name-link { text-decoration: underline; }
 .ao-modal-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 9px 14px; }
 .ao-modal-field .fl { font-size: 10.2px; text-transform: uppercase; letter-spacing: .03em; color: var(--muted); }
 .ao-modal-field .fv { font-size: 12.8px; font-variant-numeric: tabular-nums; margin-top: 1px; }
-.fl-help { display: inline-flex; align-items: center; justify-content: center; width: 12px; height: 12px; border-radius: 50%; background: var(--muted); color: var(--surface-1); font-size: 8.5px; font-weight: 700; font-style: normal; text-transform: none; text-decoration: none; letter-spacing: 0; cursor: default; margin-left: 3px; vertical-align: 1px; }
+.fl-help { display: inline-flex; align-items: center; justify-content: center; width: 12px; height: 12px; border-radius: 50%; background: var(--muted); color: var(--surface-1); font-size: 8.5px; font-weight: 700; font-style: normal; text-transform: none; text-decoration: none; letter-spacing: 0; cursor: pointer; margin-left: 3px; vertical-align: 1px; }
 .ao-modal h4 { font-size: 11.5px; text-transform: uppercase; letter-spacing: .03em; color: var(--text-secondary); margin: 0 0 8px; }
 .ao-modal-section { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--grid); }
 .ao-modal .exp-row { font-size: 12.5px; padding: 5px 0; border-bottom: 1px solid var(--grid); display: flex; justify-content: space-between; gap: 10px; }
@@ -361,7 +361,7 @@ tr.ao-row-click:hover .ao-name-link { text-decoration: underline; }
   }
   function srcTag(text) {
     if (!text) return '';
-    return ' <span class="fl-help" title="Source: ' + esc(text) + '">i</span>';
+    return ' <span class="fl-help" tabindex="0" data-tip="Source: ' + esc(text) + '">i</span>';
   }
   function fieldsHtml(fields, sources, info) {
     var html = '<div class="ao-modal-grid">' + CARD_FIELD_ORDER.map(function(k) {
@@ -540,6 +540,64 @@ tr.ao-row-click:hover .ao-name-link { text-decoration: underline; }
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') closeModal();
   });
+
+  // Custom tooltip for the "i" source icons: driven by JS, not the native
+  // `title` attribute, since native tooltips are unreliable on touch devices
+  // and inconsistent across browsers (delayed/suppressed). Works on hover
+  // (desktop) and tap (mobile/touch) via the same delegated listeners, so it
+  // survives modal content being re-created on every openModal() call.
+  var flTip = document.getElementById('ao-grid-tip');
+  var flTipOwner = null;
+  function showFlTip(el, x, y) {
+    flTip.textContent = el.getAttribute('data-tip');
+    flTip.style.display = 'block';
+    var left = x, top = y;
+    if (left == null || top == null) {
+      var r = el.getBoundingClientRect();
+      left = r.left; top = r.bottom + 8;
+    }
+    var maxLeft = window.innerWidth - 270;
+    if (left > maxLeft) left = maxLeft;
+    flTip.style.left = left + 'px';
+    flTip.style.top = top + 'px';
+    flTipOwner = el;
+  }
+  function hideFlTip() {
+    flTip.style.display = 'none';
+    flTipOwner = null;
+  }
+  document.addEventListener('mouseover', function(e) {
+    var el = e.target.closest && e.target.closest('.fl-help');
+    if (el) showFlTip(el, e.clientX + 12, e.clientY + 12);
+  });
+  document.addEventListener('mousemove', function(e) {
+    if (flTipOwner && e.target.closest && e.target.closest('.fl-help') === flTipOwner) {
+      flTip.style.left = Math.min(e.clientX + 12, window.innerWidth - 270) + 'px';
+      flTip.style.top = (e.clientY + 12) + 'px';
+    }
+  });
+  document.addEventListener('mouseout', function(e) {
+    var el = e.target.closest && e.target.closest('.fl-help');
+    if (el && el === flTipOwner) hideFlTip();
+  });
+  document.addEventListener('focusin', function(e) {
+    var el = e.target.closest && e.target.closest('.fl-help');
+    if (el) showFlTip(el);
+  });
+  document.addEventListener('focusout', function(e) {
+    var el = e.target.closest && e.target.closest('.fl-help');
+    if (el && el === flTipOwner) hideFlTip();
+  });
+  document.addEventListener('click', function(e) {
+    var el = e.target.closest && e.target.closest('.fl-help');
+    if (el) {
+      e.stopPropagation();
+      if (flTipOwner === el) hideFlTip(); else showFlTip(el);
+    } else if (flTipOwner) {
+      hideFlTip();
+    }
+  }, true);
+
   renderGrid();
   render();
 })();
