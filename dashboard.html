@@ -68,6 +68,9 @@ table.ao-table a:hover { text-decoration: underline; }
 .badge-no { color: var(--muted); }
 .ao-count { font-size: 12px; color: var(--text-secondary); margin-top: 8px; }
 .ao-footer { font-size: 13px; color: var(--text-secondary); margin-top: 18px; line-height: 1.7; }
+.ao-contact { margin-top: 16px; padding: 14px 18px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface-1); font-size: 13px; color: var(--text-primary); }
+.ao-contact a { color: var(--link); font-weight: 600; text-decoration: none; }
+.ao-contact a:hover { text-decoration: underline; }
 tr.ao-row-click { cursor: pointer; }
 tr.ao-row-click:hover { background: color-mix(in srgb, var(--s1) 8%, transparent); }
 .ao-name-link { color: var(--link); }
@@ -187,8 +190,10 @@ tr.ao-row-click:hover .ao-name-link { text-decoration: underline; }
   <div class="ao-footer">
     Data verified 2026-08-12 &middot; Sources: FSI Arecibo master catalogue, JPL SSD, Johnston&rsquo;s Archive, Pravec/Ondřejov, LPI asteroids radar archive, Crossref/OpenAlex/ADS literature search.
     &ldquo;Ouna&rdquo; is included per project decision; its 2016 lunar-spacecraft detection was reported as a candidate only (Brozović et al. 2017), not formally confirmed.<br>
-    Dashboard built in collaboration with Claude AI (Sonnet 5, Opus 4.8, and Fable 5). Last updated 2026-08-27.
+    Dashboard built in collaboration with Claude AI (Sonnet 5, Opus 4.8, and Fable 5). Last updated 2026-08-31.
   </div>
+
+  <div class="ao-contact">Have questions, comments, or just need the data? Send us your request to: <a href="mailto:apophis@ucf.edu">apophis@ucf.edu</a></div>
 
   <div class="ao-modal-backdrop hidden" id="ao-modal-backdrop">
     <div class="ao-modal" id="ao-modal" role="dialog" aria-modal="true">
