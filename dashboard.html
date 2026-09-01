@@ -3,8 +3,8 @@
 .ao-dash {
   --surface-1: #ffffff; --page: #fdfaf3; --text-primary: #111111; --text-secondary: #4a4a46;
   --muted: #6d6a60; --grid: #e6e0d1; --border: rgba(0,0,0,0.12); --gold: #FFC904;
-  --s1: #009cd4; --s2: #df500c; --s3: #3a81f6; --s4: #c07300;
-  --s5: #9964e5; --s6: #799400; --s7: #c252bb; --s8: #00a440;
+  --s1: #000000; --s2: #FFC904; --s3: #d4407c; --s4: #0089e4;
+  --s5: #00a185; --s6: #da4433; --s7: #5673f0; --s8: #ca449a;
   --good: #0a7d0a; --link: #2f51a7;
   font-family: Arial, Helvetica, system-ui, -apple-system, sans-serif;
   color: var(--text-primary); background: var(--page); padding: 24px; max-width: 1200px; margin: 0 auto;
@@ -40,8 +40,10 @@
 .toggle-btn.active { background: var(--gold); color: #111; border-color: var(--gold); font-weight: 600; }
 .toggle-btn:disabled { opacity: .4; cursor: default; }
 .ao-grid { display: grid; grid-template-columns: repeat(90, 1fr); gap: 1px; }
-.ao-grid-cell { aspect-ratio: 3 / 4; border-radius: 2px; cursor: default; position: relative; opacity: .45; transition: transform .06s ease; }
-.ao-grid-cell.has-lpi { box-shadow: inset 0 0 0 1.5px rgba(0,0,0,0.55); }
+.ao-grid-cell { aspect-ratio: 3 / 4; border-radius: 2px; cursor: default; position: relative; opacity: .45; transition: transform .06s ease; background: color-mix(in srgb, var(--cell-color) 40%, white); }
+.ao-grid-cell.has-lpi { background: var(--cell-color); box-shadow: inset 0 0 0 1.5px rgba(0,0,0,0.55); }
+.ao-grid-cell.cat-nea { border: 1.5px solid var(--gold); }
+.ao-grid-cell.cat-pha { border: 1.5px solid #000000; }
 .ao-grid-cell.clickable { cursor: pointer; opacity: 1; }
 .ao-grid-cell.clickable:hover { outline: 2px solid #111; outline-offset: 1px; z-index: 2; transform: scale(1.25); }
 .grid-legend { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 12px; font-size: 11.5px; color: var(--text-secondary); align-items: center; }
@@ -118,7 +120,7 @@ tr.ao-row-click:hover .ao-name-link { text-decoration: underline; }
 .ao-modal-footer a { color: var(--link); }
 </style>
 
-<div class="ao-dash" data-palette="#009cd4,#df500c,#3a81f6,#c07300,#9964e5,#799400,#c252bb,#00a440">
+<div class="ao-dash" data-palette="#000000,#FFC904,#d4407c,#0089e4,#00a185,#da4433,#5673f0,#ca449a">
   <h1>Arecibo Observatory &mdash; Planetary Radar Object Catalog</h1>
   <p class="subtitle">1,038 solar system objects observed by the Arecibo planetary radar system (detections and attempts), 1978&ndash;2020. Cross checked against <a href="https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html" target="_blank" rel="noopener">JPL Small-Body Database</a>, <a href="https://www.lpi.usra.edu/" target="_blank" rel="noopener">Lunar and Planetary Institute</a>, <a href="https://www.johnstonsarchive.net/" target="_blank" rel="noopener">Johnston&rsquo;s Archive</a>, <a href="http://space.asu.cas.cz/~asteroid/binastdata.htm" target="_blank" rel="noopener">Pravec/Ondřejov</a> binary databases, and Zambrano-Mar&iacute;n&rsquo;s <a href="https://dialnet.unirioja.es/servlet/dctes?codigo=395494" target="_blank" rel="noopener">doctoral thesis</a> (Universidad de Granada, 2025).</p>
   <details class="ao-about">
@@ -255,9 +257,10 @@ tr.ao-row-click:hover .ao-name-link { text-decoration: underline; }
     var tip = document.getElementById('ao-grid-tip');
     grid.innerHTML = DATA.map(function(r) {
       var clickable = hasRenderableImage(r);
-      var cls = 'ao-grid-cell' + (r.lpi ? ' has-lpi' : '') + (clickable ? ' clickable' : '');
+      var catClass = r.cat === 'NEA' ? ' cat-nea' : (r.cat === 'NEA/PHA' ? ' cat-pha' : '');
+      var cls = 'ao-grid-cell' + catClass + (r.lpi ? ' has-lpi' : '') + (clickable ? ' clickable' : '');
       var label = (r.name || r.target) + ' \u2014 ' + r.cat + (r.lpi ? ' \u2022 has LPI data' : '') + (clickable ? '' : ' \u2022 no image available');
-      return '<div class="' + cls + '" style="background:var(--s' + catSlot(r.cat) + ')" data-target="' + esc(r.target) + '" data-clickable="' + clickable + '" data-label="' + esc(label) + '"></div>';
+      return '<div class="' + cls + '" style="--cell-color:var(--s' + catSlot(r.cat) + ')" data-target="' + esc(r.target) + '" data-clickable="' + clickable + '" data-label="' + esc(label) + '"></div>';
     }).join('');
     var cells = grid.querySelectorAll('.ao-grid-cell');
     cells.forEach(function(cell) {
@@ -273,7 +276,8 @@ tr.ao-row-click:hover .ao-name-link { text-decoration: underline; }
     });
     var legend = document.getElementById('ao-grid-legend');
     legend.innerHTML = CAT_COLOR_ORDER.map(function(c, i) {
-      return '<span><span class="sw" style="background:var(--s' + (i + 1) + ')"></span>' + c + '</span>';
+      var border = c === 'NEA' ? ';border:1.5px solid var(--gold)' : (c === 'PHA' ? ';border:1.5px solid #000000' : '');
+      return '<span><span class="sw" style="background:var(--s' + (i + 1) + ')' + border + '"></span>' + c + '</span>';
     }).join('') + '<span><span class="sw lpi-demo" style="background:var(--muted)"></span>Has LPI radar data (bordered)</span>';
   }
 
