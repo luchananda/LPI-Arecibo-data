@@ -15,7 +15,7 @@
 .ao-dash .subtitle a { color: var(--link); }
 .ao-about { margin: -10px 0 20px; }
 .ao-about summary { font-size: 11.5px; color: var(--text-secondary); cursor: pointer; }
-.ao-about p { font-size: 11.5px; color: var(--text-secondary); line-height: 1.6; margin: 8px 0 0; max-width: 760px; }
+.ao-about p { font-size: 11.5px; color: var(--text-secondary); line-height: 1.6; margin: 8px 0 0; }
 .ao-about a { color: var(--link); }
 .ao-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 20px; }
 .ao-tile { background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
@@ -120,7 +120,7 @@ tr.ao-row-click:hover .ao-name-link { text-decoration: underline; }
 
 <div class="ao-dash" data-palette="#00789e,#a74824,#3767b5,#915d00,#7653aa,#607300,#93488d,#157e3c">
   <h1>Arecibo Observatory &mdash; Planetary Radar Object Catalog</h1>
-  <p class="subtitle">1,038 solar system objects observed by the Arecibo planetary radar system (detections and attempts), 1978&ndash;2020. Cross checked against <a href="https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html" target="_blank" rel="noopener">JPL Small-Body Database</a>, <a href="https://www.lpi.usra.edu/" target="_blank" rel="noopener">Lunar and Planetary Institute</a>, <a href="https://www.johnstonsarchive.net/" target="_blank" rel="noopener">Johnston&rsquo;s Archive</a>, and <a href="http://space.asu.cas.cz/~asteroid/binastdata.htm" target="_blank" rel="noopener">Pravec/Ondřejov</a> binary databases.</p>
+  <p class="subtitle">1,038 solar system objects observed by the Arecibo planetary radar system (detections and attempts), 1978&ndash;2020. Cross checked against <a href="https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html" target="_blank" rel="noopener">JPL Small-Body Database</a>, <a href="https://www.lpi.usra.edu/" target="_blank" rel="noopener">Lunar and Planetary Institute</a>, <a href="https://www.johnstonsarchive.net/" target="_blank" rel="noopener">Johnston&rsquo;s Archive</a>, <a href="http://space.asu.cas.cz/~asteroid/binastdata.htm" target="_blank" rel="noopener">Pravec/Ondřejov</a> binary databases, and Zambrano-Mar&iacute;n&rsquo;s <a href="https://dialnet.unirioja.es/servlet/dctes?codigo=395494" target="_blank" rel="noopener">doctoral thesis</a> (Universidad de Granada, 2025).</p>
   <details class="ao-about">
     <summary>About this dashboard</summary>
     <p>This catalogs every object the Arecibo Observatory's planetary radar system observed (detections and non-detection attempts) between 1978 and its 2020 collapse &mdash; near-Earth and main-belt asteroids, comets, planets, moons, rings, and spacecraft. Every value on an object's card carries a hover citation showing exactly where it came from (the master catalogue, the LPI Asteroids Radar Archive, or a specific literature reference). Radar images are hosted in a companion <a href="https://github.com/luchananda/LPI-Arecibo-data" target="_blank" rel="noopener">GitHub data repository</a>, mostly harvested from the LPI Asteroids Radar Archive; a handful of public-domain/CC-licensed NASA and NRAO images fill in objects (mainly the planets) that don't have their own LPI imagery.</p>
@@ -188,12 +188,12 @@ tr.ao-row-click:hover .ao-name-link { text-decoration: underline; }
   </div>
 
   <div class="ao-footer">
-    Data verified 2026-08-12 &middot; Sources: FSI Arecibo master catalogue, JPL SSD, Johnston&rsquo;s Archive, Pravec/Ondřejov, LPI asteroids radar archive, Crossref/OpenAlex/ADS literature search.
+    Data verified 2026-08-12 &middot; Sources: FSI Arecibo master catalogue, JPL SSD, Johnston&rsquo;s Archive, Pravec/Ondřejov, LPI asteroids radar archive, Crossref/OpenAlex/ADS literature search, Zambrano-Mar&iacute;n (2025) doctoral thesis.
     &ldquo;Ouna&rdquo; is included per project decision; its 2016 lunar-spacecraft detection was reported as a candidate only (Brozović et al. 2017), not formally confirmed.<br>
     Dashboard built in collaboration with Claude AI (Sonnet 5, Opus 4.8, and Fable 5). Last updated 2026-08-31.
   </div>
 
-  <div class="ao-contact">Have questions, comments, or just need the data? Send us your request to: <a href="mailto:apophis@ucf.edu">apophis@ucf.edu</a></div>
+  <div class="ao-contact">Have questions, comments, or need the data? Send us your request to: <a href="mailto:apophis@ucf.edu">apophis@ucf.edu</a></div>
 
   <div class="ao-modal-backdrop hidden" id="ao-modal-backdrop">
     <div class="ao-modal" id="ao-modal" role="dialog" aria-modal="true">
