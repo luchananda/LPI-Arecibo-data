@@ -2,11 +2,11 @@
 <style>
 .ao-dash {
   --surface-1: #ffffff; --page: #fdfaf3; --text-primary: #111111; --text-secondary: #4a4a46;
-  --muted: #6d6a60; --grid: #e6e0d1; --border: rgba(0,0,0,0.12); --gold: #dbb22a;
-  --s1: #00789e; --s2: #a74824; --s3: #3767b5; --s4: #915d00;
-  --s5: #7653aa; --s6: #607300; --s7: #93488d; --s8: #157e3c;
+  --muted: #6d6a60; --grid: #e6e0d1; --border: rgba(0,0,0,0.12); --gold: #FFC904;
+  --s1: #009cd4; --s2: #df500c; --s3: #3a81f6; --s4: #c07300;
+  --s5: #9964e5; --s6: #799400; --s7: #c252bb; --s8: #00a440;
   --good: #0a7d0a; --link: #2f51a7;
-  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-family: Arial, Helvetica, system-ui, -apple-system, sans-serif;
   color: var(--text-primary); background: var(--page); padding: 24px; max-width: 1200px; margin: 0 auto;
 }
 .ao-dash * { box-sizing: border-box; }
@@ -80,7 +80,7 @@ tr.ao-row-click:hover .ao-name-link { text-decoration: underline; }
 /* ---- modal: object detail page, LPI-style ---- */
 .ao-modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: flex-start; justify-content: center; padding: 4vh 16px; z-index: 1000; overflow-y: auto; }
 .ao-modal-backdrop.hidden { display: none; }
-.ao-modal { background: var(--surface-1); color: var(--text-primary); border-radius: 12px; max-width: 920px; width: 100%; padding: 24px 26px 26px; position: relative; box-shadow: 0 20px 60px rgba(0,0,0,0.35); font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+.ao-modal { background: var(--surface-1); color: var(--text-primary); border-radius: 12px; max-width: 920px; width: 100%; padding: 24px 26px 26px; position: relative; box-shadow: 0 20px 60px rgba(0,0,0,0.35); font-family: Arial, Helvetica, system-ui, -apple-system, sans-serif; }
 .ao-modal-close { position: absolute; top: 14px; right: 14px; width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface-1); color: var(--text-secondary); font-size: 16px; cursor: pointer; line-height: 1; z-index: 2; }
 .ao-modal-close:hover { color: var(--text-primary); }
 .ao-modal-head { margin: 0 32px 18px 0; }
@@ -118,7 +118,7 @@ tr.ao-row-click:hover .ao-name-link { text-decoration: underline; }
 .ao-modal-footer a { color: var(--link); }
 </style>
 
-<div class="ao-dash" data-palette="#00789e,#a74824,#3767b5,#915d00,#7653aa,#607300,#93488d,#157e3c">
+<div class="ao-dash" data-palette="#009cd4,#df500c,#3a81f6,#c07300,#9964e5,#799400,#c252bb,#00a440">
   <h1>Arecibo Observatory &mdash; Planetary Radar Object Catalog</h1>
   <p class="subtitle">1,038 solar system objects observed by the Arecibo planetary radar system (detections and attempts), 1978&ndash;2020. Cross checked against <a href="https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html" target="_blank" rel="noopener">JPL Small-Body Database</a>, <a href="https://www.lpi.usra.edu/" target="_blank" rel="noopener">Lunar and Planetary Institute</a>, <a href="https://www.johnstonsarchive.net/" target="_blank" rel="noopener">Johnston&rsquo;s Archive</a>, <a href="http://space.asu.cas.cz/~asteroid/binastdata.htm" target="_blank" rel="noopener">Pravec/Ondřejov</a> binary databases, and Zambrano-Mar&iacute;n&rsquo;s <a href="https://dialnet.unirioja.es/servlet/dctes?codigo=395494" target="_blank" rel="noopener">doctoral thesis</a> (Universidad de Granada, 2025).</p>
   <details class="ao-about">
