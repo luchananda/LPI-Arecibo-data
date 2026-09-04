@@ -901,27 +901,57 @@ tr.ao-row-click:hover .ao-name-link { text-decoration: underline; }
   });
 
   // -- real submission, POSTed to the TeamRadar-Revision Submissions Google Form --
+  // One Form submission = one Sheet row. Since a session can touch several
+  // objects, we submit one row PER OBJECT edited (all sharing the same
+  // initials/email/list-answer columns) so the Sheet reads as a real table -
+  // Object/Comment/Have data/Re-visit/References as actual columns, not one
+  // JSON blob per session.
   var GFORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSeFvyoNg7sQvdZ6CuD10oW07DDTPIRMdhrDx1oRRUc9q2PTiw/formResponse';
   var GFORM_ENTRIES = {
     initials: 'entry.1519103522',
     email: 'entry.1826505028',
     hasAdditionalList: 'entry.1132650262',
     additionalListUrl: 'entry.77071328',
-    objectsJson: 'entry.1934908371',
+    object: 'entry.796976015',
+    comment: 'entry.624306432',
+    hasData: 'entry.233549053',
+    revisit: 'entry.1209227406',
+    references: 'entry.1438340613',
+    newRefs: 'entry.819246442',
   };
+  function refsPlainText(o) {
+    var app = Object.keys(o.refApprovals).filter(function(i) { return o.refApprovals[i] === true; }).length;
+    var rej = Object.keys(o.refApprovals).filter(function(i) { return o.refApprovals[i] === false; }).length;
+    var parts = [];
+    if (app) parts.push(app + ' approved');
+    if (rej) parts.push(rej + ' rejected');
+    return parts.join(', ');
+  }
+  function newRefsPlainText(o) {
+    return (o.newRefs || []).map(function(r) {
+      return [r.doi, r.author, r.year, r.topic].filter(Boolean).join(' / ');
+    }).join(' | ');
+  }
   document.getElementById('tr-submit-btn').addEventListener('click', function() {
     var s = collectSubmission();
     if (!s.initials) { alert('Your initials are required before submitting.'); return; }
-    var body = new URLSearchParams();
-    body.set(GFORM_ENTRIES.initials, s.initials);
-    body.set(GFORM_ENTRIES.email, s.email);
-    body.set(GFORM_ENTRIES.hasAdditionalList, s.hasAdditionalList || '');
-    body.set(GFORM_ENTRIES.additionalListUrl, s.additionalListUrl);
-    body.set(GFORM_ENTRIES.objectsJson, JSON.stringify(s.objects));
     var status = document.getElementById('tr-submit-status');
+    var rows = s.objects.length ? s.objects : [null];
     status.textContent = 'Submitting…';
-    fetch(GFORM_URL, {method: 'POST', mode: 'no-cors', body: body})
-      .then(function() { status.textContent = 'Submitted – thank you! You can keep editing and submit again any time.'; })
+    Promise.all(rows.map(function(o) {
+      var body = new URLSearchParams();
+      body.set(GFORM_ENTRIES.initials, s.initials);
+      body.set(GFORM_ENTRIES.email, s.email);
+      body.set(GFORM_ENTRIES.hasAdditionalList, s.hasAdditionalList || '');
+      body.set(GFORM_ENTRIES.additionalListUrl, s.additionalListUrl);
+      body.set(GFORM_ENTRIES.object, o ? o.target : '(session only - no object edits)');
+      body.set(GFORM_ENTRIES.comment, o ? (o.comment || '') : '');
+      body.set(GFORM_ENTRIES.hasData, o && o.hasData ? 'Yes' : '');
+      body.set(GFORM_ENTRIES.revisit, o && o.revisit ? 'Yes' : '');
+      body.set(GFORM_ENTRIES.references, o ? refsPlainText(o) : '');
+      body.set(GFORM_ENTRIES.newRefs, o ? newRefsPlainText(o) : '');
+      return fetch(GFORM_URL, {method: 'POST', mode: 'no-cors', body: body});
+    })).then(function() { status.textContent = 'Submitted ' + rows.length + ' row(s) – thank you! You can keep editing and submit again any time.'; })
       .catch(function() { status.textContent = 'Submission failed – check your connection and try again.'; });
   });
 

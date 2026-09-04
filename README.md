@@ -7,6 +7,7 @@ Data repository backing the interactive dashboard cataloging every solar system 
 ## What's in this repository
 
 - `dashboard.html` — the self-contained interactive dashboard (also mirrored to a Claude Artifact for preview, but this GitHub Pages copy is the canonical, fully-working version — Claude's Artifact hosting blocks external images, so this is the one to share)
+- `TeamRadar-Revision.html` — a separate, experimental interactive page for FSI/Arecibo team members to review and submit corrections on individual catalog objects (comments, "I have data" flags, reference approve/reject, new references, Re-visit flags). It does **not** replace or link from the live dashboard above; reviewed input is merged in by hand later. See [`TeamRadar-Revision/README.md`](TeamRadar-Revision/) for what it is, why it exists, and how it was built.
 - `curated/` — hand-picked public-domain/Creative-Commons images (NASA, NRAO) used for objects that don't have their own LPI radar imagery, mainly the planets, the Moon, and Saturn's rings
 - All other folders (`Continuous Wave/`, `Delay Doppler/`, etc.) — compressed radar product images harvested from the [LPI Asteroids Radar Archive](https://www.lpi.usra.edu/resources/asteroids/), organized by product type and object designation
 
@@ -17,3 +18,9 @@ Every object's catalog entry is cross-checked against the JPL Small-Body Databas
 ## How the dashboard is built
 
 The dashboard is generated from a set of Python scripts (not included in this repo — they live in the main project directory) that merge several source spreadsheets and API-based literature searches (OpenAlex, Crossref, NASA ADS) into one master catalog, then render a single self-contained HTML file referencing the images in this repository by URL.
+
+## List of Revisions submitted from TeamRadar members
+
+Every submission made through [`TeamRadar-Revision.html`](TeamRadar-Revision.html) lands as its own row in a shared spreadsheet — one row per object edited, with real columns (object, comment, have-data flag, Re-visit flag, reference approvals, new references submitted).
+
+**[Open the submissions table →](https://docs.google.com/spreadsheets/d/1cJbV9h_u0ngABVx5Y31ugmUpYn2v9S80ThVLG6TUplI/edit)** (access request required)
