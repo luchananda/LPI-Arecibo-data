@@ -3,7 +3,9 @@
 An experimental, interactive companion page for FSI/Arecibo team members to review individual catalog objects and submit corrections — without needing edit access to the main catalog or its underlying data files.
 
 **Live page:** https://luchananda.github.io/LPI-Arecibo-data/TeamRadar-Revision.html
+
 **Submissions table (Google Sheet, access request required):** https://docs.google.com/spreadsheets/d/1cJbV9h_u0ngABVx5Y31ugmUpYn2v9S80ThVLG6TUplI/edit
+
 **Google Form backing it:** https://docs.google.com/forms/d/1HOx_QFzDlwBLChJzIx4teYQr7765MJBS5sB9qHENZMY/edit
 
 ## What this is, and what it isn't
