@@ -27,7 +27,7 @@ This is a **separate, preview page** — it does not replace, link from, or auto
 
 - A top "Add your review" panel (initials/email, comment + bulk-apply toolbar, the cross-referencing-list question, Preview/Submit)
 - A checkbox "select" column in the object table, wired to the bulk toolbar
-- Inside each object's detail popup: a compact "quick review" strip (comment, have-data, Re-visit) placed right under the image/data row, plus a fuller "Reference verification" section (approve/reject per reference, add-new-reference form) further down
+- Inside each object's detail popup: a compact "quick review" strip (comment, have-data, Re-visit) placed right under the image/data row, plus approve/reject checkboxes injected directly onto the object's existing numbered reference list (same [N] numbering, link, and expand-arrow as the public dashboard - no separate re-listing), and an add-new-reference form further down
 - The multi-object "Review references for selected…" pop-out, sharing the same approve/reject logic and the same in-memory `teamData` store as the per-object popup, so edits made either way stay in sync
 
 ### Where submissions go
