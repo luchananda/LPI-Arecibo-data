@@ -1134,12 +1134,21 @@ tr.tr-marked td:first-child { box-shadow: inset 3px 0 0 var(--gold); }
     qcode: 'entry.1407087598',
   };
   function refsPlainText(o) {
-    var app = Object.keys(o.refApprovals).filter(function(i) { return o.refApprovals[i] === true; }).length;
-    var rej = Object.keys(o.refApprovals).filter(function(i) { return o.refApprovals[i] === false; }).length;
+    // Log which references, not just a count - a count alone isn't enough
+    // to apply these decisions back to the catalog later without reopening
+    // every object's card to guess which reference the reviewer meant.
+    var row = DATA.filter(function(r) { return r.target === o.target; })[0] || {};
+    var refs = row.refs || [];
+    var approved = [], rejected = [];
+    Object.keys(o.refApprovals).forEach(function(i) {
+      var label = (refs[i] || {}).label || ('reference ' + (parseInt(i, 10) + 1));
+      if (o.refApprovals[i] === true) approved.push(label);
+      else if (o.refApprovals[i] === false) rejected.push(label);
+    });
     var parts = [];
-    if (app) parts.push(app + ' approved');
-    if (rej) parts.push(rej + ' rejected');
-    return parts.join(', ');
+    if (approved.length) parts.push('Approved: ' + approved.join('; '));
+    if (rejected.length) parts.push('Rejected: ' + rejected.join('; '));
+    return parts.join(' | ');
   }
   function newRefsPlainText(o) {
     return (o.newRefs || []).map(function(r) {
