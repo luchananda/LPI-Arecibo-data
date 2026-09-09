@@ -161,6 +161,8 @@ tr.ao-row-click:hover .ao-name-link { text-decoration: underline; }
 .pub-list li[data-ref-i] .ref-full { flex-basis: 100%; }
 .tr-newref-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px; }
 .tr-newref-grid input { padding: 6px 8px; border-radius: 6px; border: 1px solid var(--border); font-size: 12px; grid-column: span 1; }
+tr.tr-marked td { background: #fff8e1 !important; }
+tr.tr-marked td:first-child { box-shadow: inset 3px 0 0 var(--gold); }
 </style>
 
 <div class="ao-dash" data-palette="#000000,#FFC904,#d14186,#738e00,#008cdf,#d84a00,#00a27a,#7968eb">
@@ -212,6 +214,7 @@ tr.ao-row-click:hover .ao-name-link { text-decoration: underline; }
         <button class="toggle-btn" id="tr-apply-revisit">Flag selected for Re-visit</button>
         <button class="toggle-btn" id="tr-apply-approve-refs">Approve all listed references for selected</button>
         <button class="toggle-btn" id="tr-review-refs-btn">Review references for selected&hellip;</button>
+        <span class="tr-hint" id="tr-bulk-status"></span>
       </div>
       <div id="tr-multiref-panel" style="display:none;"></div>
       <div class="tr-field" style="margin-top:16px;">
@@ -430,7 +433,9 @@ tr.ao-row-click:hover .ao-name-link { text-decoration: underline; }
       var nameCell = r.name ? '<span class="ao-name-link">' + esc(r.name) + '</span>' : '<span class="ref-none">&mdash;</span>';
       var desigCell = r.name ? esc(r.desig) : '<span class="ao-name-link">' + esc(r.desig) + '</span>';
       var lpiCell = r.lpi ? '<span class="badge badge-yes">' + camIcon + 'Yes</span>' : '<span class="badge badge-no">No</span>';
-      var trAttrs = ' class="ao-row-click" data-target="' + esc(r.target) + '" tabindex="0"';
+      var _trTd = teamData[r.target];
+      var _trMarked = _trTd && (_trTd.comment || _trTd.hasData || _trTd.revisit || Object.keys(_trTd.refApprovals || {}).length || (_trTd.newRefs || []).length);
+      var trAttrs = ' class="ao-row-click' + (_trMarked ? ' tr-marked' : '') + '" data-target="' + esc(r.target) + '" tabindex="0"';
       var refsCell = '<span class="ref-none">&mdash;</span>';
       if (r.refs && r.refs.length) {
         var shown = r.refs.slice(0, 2).map(function(rf) {
@@ -817,6 +822,19 @@ tr.ao-row-click:hover .ao-name-link { text-decoration: underline; }
   document.getElementById('tr-initials').addEventListener('change', function(e) {
     document.getElementById('tr-initials-other').style.display = e.target.value === '__other' ? 'block' : 'none';
   });
+  document.getElementById('tr-initials-other').addEventListener('blur', function(e) {
+    var v = e.target.value.trim();
+    if (!v) return;
+    var sel = document.getElementById('tr-initials');
+    var exists = Array.prototype.some.call(sel.options, function(o) { return o.value.toLowerCase() === v.toLowerCase() && o.value !== '__other'; });
+    if (!exists) {
+      var opt = document.createElement('option');
+      opt.value = v; opt.textContent = v;
+      sel.insertBefore(opt, sel.querySelector('option[value="__other"]'));
+    }
+    sel.value = v;
+    e.target.style.display = 'none';
+  });
   document.getElementById('tr-haslist-yes').addEventListener('change', function() { document.getElementById('tr-haslist-yes-box').style.display = 'block'; });
   document.getElementById('tr-haslist-no').addEventListener('change', function() { document.getElementById('tr-haslist-yes-box').style.display = 'none'; });
 
@@ -841,19 +859,22 @@ tr.ao-row-click:hover .ao-name-link { text-decoration: underline; }
     var sel = selectedTargets();
     if (!sel.length) { alert('Select at least one object first (checkbox column on the left of the table).'); return; }
     sel.forEach(function(t) { td(t).comment = c; });
-    alert('Comment applied to ' + sel.length + ' object(s).');
+    document.getElementById('tr-bulk-status').textContent = 'Comment applied to ' + sel.length + ' object(s) - highlighted below.';
+    render();
   });
   document.getElementById('tr-apply-hasdata').addEventListener('click', function() {
     var sel = selectedTargets();
     if (!sel.length) { alert('Select at least one object first.'); return; }
     sel.forEach(function(t) { td(t).hasData = true; });
-    alert('Marked ' + sel.length + ' object(s) as "I have data for this object".');
+    document.getElementById('tr-bulk-status').textContent = 'Marked ' + sel.length + ' object(s) as having data - highlighted below.';
+    render();
   });
   document.getElementById('tr-apply-revisit').addEventListener('click', function() {
     var sel = selectedTargets();
     if (!sel.length) { alert('Select at least one object first.'); return; }
     sel.forEach(function(t) { td(t).revisit = true; });
-    alert('Flagged ' + sel.length + ' object(s) for Re-visit.');
+    document.getElementById('tr-bulk-status').textContent = 'Flagged ' + sel.length + ' object(s) for Re-visit - highlighted below.';
+    render();
   });
   document.getElementById('tr-apply-approve-refs').addEventListener('click', function() {
     var sel = selectedTargets();
@@ -863,7 +884,8 @@ tr.ao-row-click:hover .ao-name-link { text-decoration: underline; }
       var row = DATA.filter(function(r) { return r.target === t; })[0] || {};
       (row.refsFull || []).forEach(function(rf, i) { td(t).refApprovals[i] = true; refCount++; });
     });
-    alert('Approved ' + refCount + ' reference(s) across ' + sel.length + ' object(s).');
+    document.getElementById('tr-bulk-status').textContent = 'Approved ' + refCount + ' reference(s) across ' + sel.length + ' object(s) - highlighted below.';
+    render();
   });
 
   // Shared reference approve/reject markup + wiring - used both by the
