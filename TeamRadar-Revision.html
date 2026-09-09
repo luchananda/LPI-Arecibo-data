@@ -161,6 +161,7 @@ tr.ao-row-click:hover .ao-name-link { text-decoration: underline; }
 .pub-list li[data-ref-i] .ref-full { flex-basis: 100%; }
 .tr-newref-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px; }
 .tr-newref-grid input { padding: 6px 8px; border-radius: 6px; border: 1px solid var(--border); font-size: 12px; grid-column: span 1; }
+tr.tr-selected td { background: #e3f2fd; }
 tr.tr-marked td { background: #fff8e1 !important; }
 tr.tr-marked td:first-child { box-shadow: inset 3px 0 0 var(--gold); }
 </style>
@@ -435,7 +436,8 @@ tr.tr-marked td:first-child { box-shadow: inset 3px 0 0 var(--gold); }
       var lpiCell = r.lpi ? '<span class="badge badge-yes">' + camIcon + 'Yes</span>' : '<span class="badge badge-no">No</span>';
       var _trTd = teamData[r.target];
       var _trMarked = _trTd && (_trTd.comment || _trTd.hasData || _trTd.revisit || Object.keys(_trTd.refApprovals || {}).length || (_trTd.newRefs || []).length);
-      var trAttrs = ' class="ao-row-click' + (_trMarked ? ' tr-marked' : '') + '" data-target="' + esc(r.target) + '" tabindex="0"';
+      var _trSelected = _trTd && _trTd.selected;
+      var trAttrs = ' class="ao-row-click' + (_trMarked ? ' tr-marked' : '') + (_trSelected ? ' tr-selected' : '') + '" data-target="' + esc(r.target) + '" tabindex="0"';
       var refsCell = '<span class="ref-none">&mdash;</span>';
       if (r.refs && r.refs.length) {
         var shown = r.refs.slice(0, 2).map(function(rf) {
@@ -839,7 +841,7 @@ tr.tr-marked td:first-child { box-shadow: inset 3px 0 0 var(--gold); }
   document.getElementById('tr-haslist-no').addEventListener('change', function() { document.getElementById('tr-haslist-yes-box').style.display = 'none'; });
 
   function selectedTargets() {
-    return Array.prototype.slice.call(document.querySelectorAll('.tr-row-select:checked')).map(function(cb) { return cb.getAttribute('data-target'); });
+    return Object.keys(teamData).filter(function(t) { return teamData[t].selected; });
   }
   function updateSelCount() {
     document.getElementById('tr-sel-count').textContent = selectedTargets().length + ' objects selected';
@@ -847,10 +849,15 @@ tr.tr-marked td:first-child { box-shadow: inset 3px 0 0 var(--gold); }
   document.getElementById('ao-tbody').addEventListener('change', function(e) {
     if (!e.target.classList.contains('tr-row-select')) return;
     td(e.target.getAttribute('data-target')).selected = e.target.checked;
+    e.target.closest('tr').classList.toggle('tr-selected', e.target.checked);
     updateSelCount();
   });
   document.getElementById('tr-select-all').addEventListener('change', function(e) {
-    document.querySelectorAll('.tr-row-select').forEach(function(cb) { cb.checked = e.target.checked; td(cb.getAttribute('data-target')).selected = e.target.checked; });
+    document.querySelectorAll('.tr-row-select').forEach(function(cb) {
+      cb.checked = e.target.checked;
+      td(cb.getAttribute('data-target')).selected = e.target.checked;
+      cb.closest('tr').classList.toggle('tr-selected', e.target.checked);
+    });
     updateSelCount();
   });
   document.getElementById('tr-apply-comment').addEventListener('click', function() {
