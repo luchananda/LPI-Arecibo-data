@@ -1063,6 +1063,7 @@ tr.tr-marked td:first-child { box-shadow: inset 3px 0 0 var(--gold); }
       document.getElementById('tr-bulk-status').textContent = '';
       ['tr-apply-hasdata', 'tr-apply-revisit', 'tr-apply-approve-refs'].forEach(function(id) { document.getElementById(id).classList.remove('active'); });
       render();
+      updateSelCount();
     }).catch(function() { status.textContent = 'Submission failed – check your connection and try again.'; });
   });
 
