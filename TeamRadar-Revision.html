@@ -232,6 +232,7 @@ tr.tr-marked td:first-child { box-shadow: inset 3px 0 0 var(--gold); }
         <button class="toggle-btn" id="tr-apply-revisit">Flag selected for Re-visit</button>
         <button class="toggle-btn" id="tr-apply-approve-refs">Approve all listed references for selected</button>
         <button class="toggle-btn" id="tr-review-refs-btn">Review references for selected&hellip;</button>
+        <button class="toggle-btn" id="tr-clear-selection">Clear selection</button>
         <span class="tr-hint" id="tr-bulk-status"></span>
       </div>
       <div id="tr-multiref-panel" style="display:none;"></div>
@@ -939,6 +940,15 @@ tr.tr-marked td:first-child { box-shadow: inset 3px 0 0 var(--gold); }
       td(cb.getAttribute('data-target')).selected = e.target.checked;
       cb.closest('tr').classList.toggle('tr-selected', e.target.checked);
     });
+    updateSelCount();
+  });
+  document.getElementById('tr-clear-selection').addEventListener('click', function() {
+    // Selection can span pages, so clear it in teamData directly - not
+    // just the checkboxes currently visible on this page.
+    selectedTargets().forEach(function(t) { td(t).selected = false; });
+    document.getElementById('tr-select-all').checked = false;
+    document.getElementById('tr-bulk-status').textContent = 'Selection cleared.';
+    render();
     updateSelCount();
   });
   document.getElementById('tr-apply-comment').addEventListener('click', function() {
