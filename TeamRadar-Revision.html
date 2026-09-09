@@ -943,7 +943,14 @@ tr.tr-marked td:first-child { box-shadow: inset 3px 0 0 var(--gold); }
     if (!c) { alert('Type a comment first.'); return; }
     var sel = selectedTargets();
     if (!sel.length) { alert('Select at least one object first (checkbox column on the left of the table).'); return; }
-    sel.forEach(function(t) { td(t).comment = c; });
+    sel.forEach(function(t) {
+      var d = td(t);
+      // Don't clobber a comment already typed on the object's own card -
+      // append instead, unless this exact text is already there (so
+      // re-clicking Apply on the same selection doesn't duplicate it).
+      if (d.comment && d.comment.indexOf(c) === -1) { d.comment = d.comment + '\n' + c; }
+      else if (!d.comment) { d.comment = c; }
+    });
     document.getElementById('tr-bulk-status').textContent = 'Comment applied to ' + sel.length + ' object(s) - highlighted below.';
     var btn = this;
     btn.classList.add('active');
