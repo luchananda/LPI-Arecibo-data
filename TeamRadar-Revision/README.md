@@ -14,12 +14,15 @@ This is a **separate, preview page** — it does not replace, link from, or auto
 
 ## What it lets a reviewer do
 
-- Identify themselves by initials (required) and, optionally, an email for one-time updates
-- Leave a comment on one object, or select several at once and apply the same comment to all of them
-- Flag "I have data for this object" or "add to Re-visit list", single or multi-select
-- Approve or reject each of an object's existing references, either from that object's own detail card, or from a pop-out panel that lists several selected objects' references side by side (so a reviewer isn't stuck reviewing one object at a time)
+- Identify themselves by initials (required) and, optionally, an email for one-time updates — initials typed via "my initials aren't listed" are added to the dropdown for the rest of the session
+- Mark an object "Selected for review" directly from its own card (in addition to the checkbox column in the table), and see a live "saved in this browser tab" status as soon as any field on that card is touched
+- Leave a comment on one object, or select several at once (across pages — selection isn't limited to the current 25-row page) and apply the same comment to all of them
+- Flag "I have data for this object", "add to Re-visit list", suggest a corrected Qcode (1–5), or approve/reject references — all editable directly on an object's own card, no separate save step
+- The bulk toolbar buttons (Mark has-data, Flag revisit, Approve all references) are toggles: pressing one applies it to the current selection and lights up the button; pressing again undoes it. Selected and edited rows stay visibly highlighted in the table so it's clear what's queued
+- Approve or reject each of an object's existing references, either from that object's own detail card (checkboxes added right onto the same numbered, linked reference list the public dashboard shows), or from a pop-out panel listing several selected objects' references side by side
 - Submit a new reference for an object (DOI preferred, falling back to first author + year, or a topic/title if that's all that's known)
 - Report a separate list of objects they have for cross-referencing, with an optional link, or a note to email it in directly
+- Work is autosaved to this browser's local storage every few seconds and restored if the tab is closed or reloaded before submitting — it's still only sent to the shared Sheet when Submit is clicked. After a successful submit, the form resets (comments, flags, selections) but keeps your initials and email for the next round
 
 ## How it was built
 
@@ -27,7 +30,7 @@ This is a **separate, preview page** — it does not replace, link from, or auto
 
 - A top "Add your review" panel (initials/email, comment + bulk-apply toolbar, the cross-referencing-list question, Preview/Submit)
 - A checkbox "select" column in the object table, wired to the bulk toolbar
-- Inside each object's detail popup: a compact "quick review" strip (comment, have-data, Re-visit) placed right under the image/data row, plus approve/reject checkboxes injected directly onto the object's existing numbered reference list (same [N] numbering, link, and expand-arrow as the public dashboard - no separate re-listing), and an add-new-reference form further down
+- Inside each object's detail popup: a "Select for review" button and live save-status line, a compact "quick review" strip (comment, have-data, Re-visit, Qcode) placed right under the image/data row, plus approve/reject checkboxes injected directly onto the object's existing numbered reference list (same [N] numbering, link, and full citation as the public dashboard - no separate re-listing), and an add-new-reference form further down
 - The multi-object "Review references for selected…" pop-out, sharing the same approve/reject logic and the same in-memory `teamData` store as the per-object popup, so edits made either way stay in sync
 
 ### Where submissions go

@@ -1,6 +1,6 @@
 # Arecibo Observatory Planetary Radar Object Catalog
 
-Data repository backing the interactive dashboard cataloging every solar system object detected by the Arecibo Observatory's planetary radar system between 1978 and 2020 — 1,039 objects spanning near-Earth asteroids, potentially hazardous asteroids, main-belt asteroids, comets, planets, moons, rings, and spacecraft.
+Data repository backing the interactive dashboard cataloging every solar system object detected by the Arecibo Observatory's planetary radar system between 1978 and 2020 — 1,036 objects spanning near-Earth asteroids, potentially hazardous asteroids, main-belt asteroids, comets, planets, moons, rings, and spacecraft.
 
 **Live dashboard:** https://luchananda.github.io/LPI-Arecibo-data/dashboard.html
 
@@ -14,6 +14,12 @@ Data repository backing the interactive dashboard cataloging every solar system 
 ## Data sources
 
 Every object's catalog entry is cross-checked against the JPL Small-Body Database, the Lunar and Planetary Institute's Asteroids Radar Archive, Johnston's Archive, and the Pravec/Ondřejov binary asteroid database. Every value shown on an object's card in the dashboard carries a hover citation showing exactly which of these it came from.
+
+Observation history (which years an object was observed, how many distinct days, and in which mode — CW, DD, or both, down to the DD baud/resolution code) is tracked separately in an Arecibo processing-log spreadsheet, shown as a per-year table on each object's card. That log only covers a subset of objects/years, so a blank Mode/resolution cell means "not confirmed," not "not observed" — the Years Observed count itself comes from the broader historical record.
+
+## Filtering the catalog
+
+Beyond the category chips (NEA, PHA, MBA, Comet, Moons, Planets, Spacecraft) and free-text search, the table can be filtered by detection status, presence of a matched reference, "With product" (has a downloadable CW/delay-Doppler product in this repository), binary/multiple systems, observing **Mode** (CW / DD / CW+DD), and **DD resolution** (the processing-log baud codes: p05, p1, p2, p5, u1, u2, u4, other). A live "Objects matching selection" count next to the search box reflects the combined effect of every active filter.
 
 ## How the dashboard is built
 
