@@ -328,7 +328,7 @@ tr.tr-marked td:first-child { box-shadow: inset 3px 0 0 var(--gold); }
     Data verified 2026-08-12 &middot; Sources: <a href="https://docs.google.com/spreadsheets/d/1tWP5kVPubVmXMozXD9LiqFNGPcbx0XbAowsm7gNzLRs/edit?usp=sharing" target="_blank" rel="noopener">FSI Arecibo master catalogue</a> (access request required), <a href="https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html" target="_blank" rel="noopener">JPL SSD</a>, JPL Asteroid Radar History (<a href="https://echo.jpl.nasa.gov/asteroids/PDS.asteroid.radar.history.html" target="_blank" rel="noopener">2025</a>, <a href="https://echo.jpl.nasa.gov/History/" target="_blank" rel="noopener">2026</a>), <a href="https://www.johnstonsarchive.net/" target="_blank" rel="noopener">Johnston&rsquo;s Archive</a>, <a href="http://space.asu.cas.cz/~asteroid/binastdata.htm" target="_blank" rel="noopener">Pravec/Ondřejov</a>, <a href="https://www.lpi.usra.edu/resources/asteroids/" target="_blank" rel="noopener">LPI asteroids radar archive</a>, <a href="https://www.crossref.org/" target="_blank" rel="noopener">Crossref</a>/<a href="https://openalex.org/" target="_blank" rel="noopener">OpenAlex</a>/<a href="https://ui.adsabs.harvard.edu/" target="_blank" rel="noopener">ADS</a> literature search, <a href="https://dialnet.unirioja.es/servlet/dctes?codigo=395494" target="_blank" rel="noopener">Zambrano-Mar&iacute;n (2025)</a>.
     &ldquo;Ouna&rdquo; is included per project decision; its 2016 lunar-spacecraft detection was reported as a candidate only (Brozović et al. 2017), not formally confirmed.<br>
     <b>Years Observed</b> is compiled from historical records and may not be complete, particularly for observations before 2000 (e.g. 433 Eros&rsquo;s 1975 detection is not yet reflected) &mdash; treat gaps in this field as unconfirmed absence, not confirmed non-observation.<br>
-    Dashboard built in collaboration with <a href="https://claude.ai" target="_blank" rel="noopener">Claude AI</a> (<a href="https://claude.ai" target="_blank" rel="noopener">Sonnet 5</a>, <a href="https://claude.ai" target="_blank" rel="noopener">Opus 4.8</a>, and <a href="https://claude.ai" target="_blank" rel="noopener">Fable 5</a>). Last updated 2026-09-09.
+    Dashboard built in collaboration with <a href="https://claude.ai" target="_blank" rel="noopener">Claude AI</a> (<a href="https://claude.ai" target="_blank" rel="noopener">Sonnet 5</a>, <a href="https://claude.ai" target="_blank" rel="noopener">Opus 4.8</a>, and <a href="https://claude.ai" target="_blank" rel="noopener">Fable 5</a>). Last updated 2026-09-10.
   </div>
 
   <div class="ao-contact" style="font-size:15px;text-align:center;">Have questions, comments, or need the data? Send us your request to: <a href="mailto:apophis@ucf.edu">apophis@ucf.edu</a></div>
@@ -539,9 +539,12 @@ tr.tr-marked td:first-child { box-shadow: inset 3px 0 0 var(--gold); }
     var fromLpi = {
       'Diameter (km)': !!p['Diameter'], 'Rotation Period (h)': !!p['Rotation period'], 'Geometric Albedo': !!p['Geometric Albedo'],
     };
+    var yearsSrc = (row.obsYearRows && row.obsYearRows.length) ? teamSrc :
+      teamSrc + ' - this object is not in Data_Project_brain.cell.killer.xlsx (no per-year processing-log detail available); years come from the team\'s historical observation record instead.';
     var out = {};
     CARD_FIELD_ORDER.forEach(function(k) {
       if (manual[k]) out[k] = manual[k];
+      else if (k === 'Years Observed') out[k] = yearsSrc;
       else if (fromLpi[k]) out[k] = lpiSrc;
       else if (sbdbFields[k]) out[k] = 'NASA SBDB';
       else out[k] = teamSrc;

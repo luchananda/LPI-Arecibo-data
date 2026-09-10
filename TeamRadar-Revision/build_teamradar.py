@@ -18,9 +18,10 @@ html = html.replace(
 html = html.replace(
     '<h1>Arecibo Observatory &mdash; Planetary Radar Object Catalog</h1>',
     '<h1>TeamRadar-Revision</h1>\n'
-    '<div class="tr-banner">PREVIEW BUILD &mdash; this is a staging version for team data review, '
-    'not the live dashboard. Nothing you submit here is saved anywhere yet (the shared-spreadsheet '
-    'connection is being set up); reviewed input will eventually flow into the main catalog above.</div>',
+    '<div class="tr-banner">TEAM REVIEW BUILD &mdash; this is a staging version for team data review, '
+    'separate from the live dashboard above. Submissions here ARE saved live to a shared Google Sheet '
+    '(ask apophis@ucf.edu for access). They do not update the catalog automatically &mdash; a person '
+    'reviews the sheet and applies accepted changes to the main catalog by hand.</div>',
     1)
 
 # 2) contact box: 2pt bigger, centered
@@ -39,6 +40,13 @@ html = html.replace(
 html = html.replace(
     "return '<tr' + trAttrs + '><td>' + esc(r.num) + '</td><td>' + nameCell",
     "return '<tr' + trAttrs + '><td><input type=\"checkbox\" class=\"tr-row-select\" data-target=\"' + esc(r.target) + '\" onclick=\"event.stopPropagation()\" ' + (teamData[r.target] && teamData[r.target].selected ? 'checked' : '') + '></td><td>' + esc(r.num) + '</td><td>' + nameCell",
+    1)
+html = html.replace(
+    "var trAttrs = ' class=\"ao-row-click\" data-target=\"' + esc(r.target) + '\" tabindex=\"0\"';",
+    "var _trTd = teamData[r.target];\n"
+    "      var _trMarked = _trTd && (_trTd.comment || _trTd.hasData || _trTd.revisit || Object.keys(_trTd.refApprovals || {}).length || (_trTd.newRefs || []).length);\n"
+    "      var _trSelected = _trTd && _trTd.selected;\n"
+    "      var trAttrs = ' class=\"ao-row-click' + (_trMarked ? ' tr-marked' : '') + (_trSelected ? ' tr-selected' : '') + '\" data-target=\"' + esc(r.target) + '\" tabindex=\"0\"';",
     1)
 
 TEAM_PANEL = '''
@@ -70,6 +78,8 @@ TEAM_PANEL = '''
         <button class="toggle-btn" id="tr-apply-revisit">Flag selected for Re-visit</button>
         <button class="toggle-btn" id="tr-apply-approve-refs">Approve all listed references for selected</button>
         <button class="toggle-btn" id="tr-review-refs-btn">Review references for selected&hellip;</button>
+        <button class="toggle-btn" id="tr-clear-selection">Clear selection</button>
+        <span class="tr-hint" id="tr-bulk-status"></span>
       </div>
       <div id="tr-multiref-panel" style="display:none;"></div>
       <div class="tr-field" style="margin-top:16px;">
@@ -92,10 +102,9 @@ TEAM_PANEL = '''
     </div>
 '''
 
-html = html.replace(
-    '<h2 class="ao-h2-lg">Objects by category</h2>',
-    TEAM_PANEL.strip('\n') + '\n\n    <h2 class="ao-h2-lg">Objects by category</h2>',
-    1)
+_panel_anchor = '<div class="ao-panel">\n    <div class="ao-panel-head-row">\n      <h2 style="margin:0;">Browse the catalog</h2>'
+assert html.count(_panel_anchor) == 1, 'Browse-the-catalog panel anchor not found exactly once - update it'
+html = html.replace(_panel_anchor, TEAM_PANEL.strip('\n') + '\n\n  ' + _panel_anchor, 1)
 
 TEAM_CSS = '''
 .tr-banner { background: #fff3cd; border: 1px solid #e6c766; color: #6b5300; font-size: 12px; font-weight: 600; padding: 8px 14px; border-radius: 8px; margin: 4px 0 16px; }
@@ -116,6 +125,7 @@ TEAM_CSS = '''
 .tr-multiref-obj:last-child { margin-bottom: 0; border-bottom: none; padding-bottom: 0; }
 .tr-multiref-obj h5 { font-size: 12px; font-weight: 700; margin: 0 0 6px; }
 .tr-modal-quick { margin-top: 10px; padding: 8px 10px; border: 1px dashed var(--gold); border-radius: 8px; background: var(--page); font-size: 11px; }
+.tr-modal-statusrow { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
 .tr-modal-quick .tr-field { margin-bottom: 4px; }
 .tr-modal-quick .tr-field label { font-size: 10px; margin-bottom: 2px; }
 .tr-modal-quick textarea { font-size: 11px; padding: 4px 6px; min-height: 24px; }
@@ -123,28 +133,88 @@ TEAM_CSS = '''
 .tr-modal-section { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--grid); }
 .tr-modal-section h4 { font-size: 12px; text-transform: uppercase; letter-spacing: .03em; color: var(--text-secondary); margin: 0 0 8px; }
 .tr-ref-row { display: flex; align-items: flex-start; gap: 8px; font-size: 12px; margin-bottom: 6px; }
+.tr-ref-inline { display: inline-flex; align-items: center; gap: 8px; margin-left: 10px; font-size: 11px; color: var(--text-secondary); }
+.tr-ref-inline label { display: inline-flex; align-items: center; gap: 3px; }
+.pub-list li[data-ref-i] { display: flex; flex-wrap: wrap; align-items: center; gap: 2px; }
+.pub-list li[data-ref-i] .ref-full { flex-basis: 100%; }
 .tr-newref-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px; }
 .tr-newref-grid input { padding: 6px 8px; border-radius: 6px; border: 1px solid var(--border); font-size: 12px; grid-column: span 1; }
+tr.tr-selected td { background: #e3f2fd; }
+tr.tr-marked td { background: #fff8e1 !important; }
+tr.tr-marked td:first-child { box-shadow: inset 3px 0 0 var(--gold); }
 '''
 html = html.replace('</style>', TEAM_CSS + '</style>', 1)
 
 TEAM_DATA_INIT = '''  var teamData = {};
-  function td(target) { if (!teamData[target]) teamData[target] = {selected:false, comment:'', hasData:false, revisit:false, refApprovals:{}, newRefs:[]}; return teamData[target]; }
+  function td(target) { if (!teamData[target]) teamData[target] = {selected:false, comment:'', hasData:false, revisit:false, qcode:'', refApprovals:{}, newRefs:[]}; return teamData[target]; }
 '''
-html = html.replace(
-    "var state = { q: '', cat: 'All', lpiOnly: false, det: 'All', recheckOnly: false, hasRef: 'All', sortKey: null, sortDir: 1, page: 0 };",
-    "var state = { q: '', cat: 'All', lpiOnly: false, det: 'All', recheckOnly: false, hasRef: 'All', sortKey: null, sortDir: 1, page: 0 };\n" + TEAM_DATA_INIT,
-    1)
+_state_anchor = "sortDir: 1, page: 0 };"
+assert html.count(_state_anchor) == 1, 'state-object anchor not found exactly once in dashboard.html - update it'
+html = html.replace(_state_anchor, _state_anchor + "\n" + TEAM_DATA_INIT, 1)
 
 TEAM_JS = '''
+  // Everything typed into the review form (comments, Qcode, flags, ref
+  // approvals, initials/email) lives ONLY in this browser tab's memory
+  // until you click the main Submit button, which is what actually sends
+  // it to the shared Google Sheet. To avoid losing work if the tab is
+  // accidentally closed or reloaded before submitting, autosave a copy to
+  // this browser's local storage (this device/browser only, not shared)
+  // and restore it on load.
+  var TR_STORAGE_KEY = 'teamradar_data_v1';
+  function trPersist() {
+    try {
+      localStorage.setItem(TR_STORAGE_KEY, JSON.stringify({
+        teamData: teamData,
+        initials: document.getElementById('tr-initials').value,
+        initialsOther: document.getElementById('tr-initials-other').value,
+        email: document.getElementById('tr-email').value,
+      }));
+    } catch (e) {}
+  }
+  function trRestore() {
+    var saved;
+    try { saved = JSON.parse(localStorage.getItem(TR_STORAGE_KEY) || 'null'); } catch (e) { saved = null; }
+    if (!saved) return;
+    if (saved.teamData) { Object.keys(saved.teamData).forEach(function(t) { teamData[t] = saved.teamData[t]; }); }
+    if (saved.initials) {
+      var sel = document.getElementById('tr-initials');
+      var exists = Array.prototype.some.call(sel.options, function(o) { return o.value === saved.initials; });
+      if (!exists && saved.initials !== '__other') {
+        var opt = document.createElement('option');
+        opt.value = saved.initials; opt.textContent = saved.initials;
+        sel.insertBefore(opt, sel.querySelector('option[value="__other"]'));
+      }
+      sel.value = saved.initials;
+    }
+    if (saved.email) document.getElementById('tr-email').value = saved.email;
+  }
+  trRestore();
+  setInterval(trPersist, 3000);
+  window.addEventListener('beforeunload', trPersist);
+  render();
+  updateSelCount();
+
   document.getElementById('tr-initials').addEventListener('change', function(e) {
     document.getElementById('tr-initials-other').style.display = e.target.value === '__other' ? 'block' : 'none';
+  });
+  document.getElementById('tr-initials-other').addEventListener('blur', function(e) {
+    var v = e.target.value.trim();
+    if (!v) return;
+    var sel = document.getElementById('tr-initials');
+    var exists = Array.prototype.some.call(sel.options, function(o) { return o.value.toLowerCase() === v.toLowerCase() && o.value !== '__other'; });
+    if (!exists) {
+      var opt = document.createElement('option');
+      opt.value = v; opt.textContent = v;
+      sel.insertBefore(opt, sel.querySelector('option[value="__other"]'));
+    }
+    sel.value = v;
+    e.target.style.display = 'none';
   });
   document.getElementById('tr-haslist-yes').addEventListener('change', function() { document.getElementById('tr-haslist-yes-box').style.display = 'block'; });
   document.getElementById('tr-haslist-no').addEventListener('change', function() { document.getElementById('tr-haslist-yes-box').style.display = 'none'; });
 
   function selectedTargets() {
-    return Array.prototype.slice.call(document.querySelectorAll('.tr-row-select:checked')).map(function(cb) { return cb.getAttribute('data-target'); });
+    return Object.keys(teamData).filter(function(t) { return teamData[t].selected; });
   }
   function updateSelCount() {
     document.getElementById('tr-sel-count').textContent = selectedTargets().length + ' objects selected';
@@ -152,10 +222,24 @@ TEAM_JS = '''
   document.getElementById('ao-tbody').addEventListener('change', function(e) {
     if (!e.target.classList.contains('tr-row-select')) return;
     td(e.target.getAttribute('data-target')).selected = e.target.checked;
+    e.target.closest('tr').classList.toggle('tr-selected', e.target.checked);
     updateSelCount();
   });
   document.getElementById('tr-select-all').addEventListener('change', function(e) {
-    document.querySelectorAll('.tr-row-select').forEach(function(cb) { cb.checked = e.target.checked; td(cb.getAttribute('data-target')).selected = e.target.checked; });
+    document.querySelectorAll('.tr-row-select').forEach(function(cb) {
+      cb.checked = e.target.checked;
+      td(cb.getAttribute('data-target')).selected = e.target.checked;
+      cb.closest('tr').classList.toggle('tr-selected', e.target.checked);
+    });
+    updateSelCount();
+  });
+  document.getElementById('tr-clear-selection').addEventListener('click', function() {
+    // Selection can span pages, so clear it in teamData directly - not
+    // just the checkboxes currently visible on this page.
+    selectedTargets().forEach(function(t) { td(t).selected = false; });
+    document.getElementById('tr-select-all').checked = false;
+    document.getElementById('tr-bulk-status').textContent = 'Selection cleared.';
+    render();
     updateSelCount();
   });
   document.getElementById('tr-apply-comment').addEventListener('click', function() {
@@ -163,30 +247,50 @@ TEAM_JS = '''
     if (!c) { alert('Type a comment first.'); return; }
     var sel = selectedTargets();
     if (!sel.length) { alert('Select at least one object first (checkbox column on the left of the table).'); return; }
-    sel.forEach(function(t) { td(t).comment = c; });
-    alert('Comment applied to ' + sel.length + ' object(s).');
+    sel.forEach(function(t) {
+      var d = td(t);
+      // Don't clobber a comment already typed on the object's own card -
+      // append instead, unless this exact text is already there (so
+      // re-clicking Apply on the same selection doesn't duplicate it).
+      if (d.comment && d.comment.indexOf(c) === -1) { d.comment = d.comment + '\\n' + c; }
+      else if (!d.comment) { d.comment = c; }
+    });
+    document.getElementById('tr-bulk-status').textContent = 'Comment applied to ' + sel.length + ' object(s) - highlighted below.';
+    var btn = this;
+    btn.classList.add('active');
+    setTimeout(function() { btn.classList.remove('active'); }, 1200);
+    render();
   });
-  document.getElementById('tr-apply-hasdata').addEventListener('click', function() {
-    var sel = selectedTargets();
-    if (!sel.length) { alert('Select at least one object first.'); return; }
-    sel.forEach(function(t) { td(t).hasData = true; });
-    alert('Marked ' + sel.length + ' object(s) as "I have data for this object".');
+  // Toggle buttons: click turns the flag ON for the current selection and
+  // presses the button; click again turns it back OFF (removes the flag)
+  // and un-presses it. The button's pressed state is independent of
+  // selection - it just remembers which way it last applied.
+  function wireToggleBtn(id, onToggle) {
+    var btn = document.getElementById(id);
+    btn.addEventListener('click', function() {
+      var sel = selectedTargets();
+      if (!sel.length) { alert('Select at least one object first.'); return; }
+      var nowActive = !btn.classList.contains('active');
+      btn.classList.toggle('active', nowActive);
+      onToggle(sel, nowActive);
+      render();
+    });
+  }
+  wireToggleBtn('tr-apply-hasdata', function(sel, on) {
+    sel.forEach(function(t) { td(t).hasData = on; });
+    document.getElementById('tr-bulk-status').textContent = (on ? 'Marked ' : 'Unmarked ') + sel.length + ' object(s) as having data - highlighted below.';
   });
-  document.getElementById('tr-apply-revisit').addEventListener('click', function() {
-    var sel = selectedTargets();
-    if (!sel.length) { alert('Select at least one object first.'); return; }
-    sel.forEach(function(t) { td(t).revisit = true; });
-    alert('Flagged ' + sel.length + ' object(s) for Re-visit.');
+  wireToggleBtn('tr-apply-revisit', function(sel, on) {
+    sel.forEach(function(t) { td(t).revisit = on; });
+    document.getElementById('tr-bulk-status').textContent = (on ? 'Flagged ' : 'Unflagged ') + sel.length + ' object(s) for Re-visit - highlighted below.';
   });
-  document.getElementById('tr-apply-approve-refs').addEventListener('click', function() {
-    var sel = selectedTargets();
-    if (!sel.length) { alert('Select at least one object first.'); return; }
+  wireToggleBtn('tr-apply-approve-refs', function(sel, on) {
     var refCount = 0;
     sel.forEach(function(t) {
       var row = DATA.filter(function(r) { return r.target === t; })[0] || {};
-      (row.refsFull || []).forEach(function(rf, i) { td(t).refApprovals[i] = true; refCount++; });
+      (row.refsFull || []).forEach(function(rf, i) { if (on) { td(t).refApprovals[i] = true; } else { delete td(t).refApprovals[i]; } refCount++; });
     });
-    alert('Approved ' + refCount + ' reference(s) across ' + sel.length + ' object(s).');
+    document.getElementById('tr-bulk-status').textContent = (on ? 'Approved ' : 'Un-approved ') + refCount + ' reference(s) across ' + sel.length + ' object(s) - highlighted below.';
   });
 
   // Shared reference approve/reject markup + wiring - used both by the
@@ -196,14 +300,30 @@ TEAM_JS = '''
   function refsHtmlFor(target) {
     var row = DATA.filter(function(r) { return r.target === target; })[0] || {};
     var d = td(target);
-    if (!(row.refsFull || []).length) return '<div class="tr-hint">No references listed for this object yet.</div>';
-    return row.refsFull.map(function(rf, i) {
-      var checked = d.refApprovals[i];
-      return '<div class="tr-ref-row"><label><input type="checkbox" class="tr-ref-approve" data-target="' + esc(target) + '" data-i="' + i + '" ' + (checked === true ? 'checked' : '') + '> approve</label>' +
-        '<label><input type="checkbox" class="tr-ref-reject" data-target="' + esc(target) + '" data-i="' + i + '" ' + (checked === false ? 'checked' : '') + '> reject</label>' +
-        '<span class="fl-help" tabindex="0" data-tip="Approve if this reference correctly applies to this object; reject if it looks wrong.">i</span>' +
-        '<span>' + esc(rf.citation || rf.url || 'reference ' + (i + 1)).slice(0, 90) + '</span></div>';
-    }).join('');
+    var refsFull = row.refsFull || [];
+    if (!refsFull.length) return '<div class="tr-hint">No references listed for this object yet.</div>';
+    var combined = (row.refs || []).map(function(rf, i) { return {label: rf.label, url: rf.url, year: rf.year, citation: (refsFull[i] || {}).citation || null, i: i}; });
+    // Chronological order, SBDB pinned first - same rule the object's own
+    // card and the public dashboard use, so [N] means the same reference
+    // no matter which of the three views a reviewer is looking at.
+    combined.sort(function(a, b) {
+      var ay = a.year ? parseInt(a.year, 10) : Infinity, by = b.year ? parseInt(b.year, 10) : Infinity;
+      return ay - by;
+    });
+    var numbered = (row.link ? [{sbdb: true, label: 'JPL SBDB', url: row.link}] : []).concat(combined);
+    return '<ul class="pub-list">' + numbered.map(function(ref, idx) {
+      var num = '[' + (idx + 1) + '] ';
+      if (ref.sbdb) {
+        return '<li>' + num + '<a href="' + esc(ref.url) + '" target="_blank" rel="noopener">' + esc(ref.label) + '</a></li>';
+      }
+      var checked = d.refApprovals[ref.i];
+      var labelHtml = ref.url ? '<a href="' + esc(ref.url) + '" target="_blank" rel="noopener">' + esc(ref.label) + '</a>' : esc(ref.label);
+      var urlLine = ref.url ? ' <a href="' + esc(ref.url) + '" target="_blank" rel="noopener">' + esc(ref.url) + '</a>' : '';
+      var arrow = ref.citation ? ' <span class="ref-expand open" tabindex="0" role="button" aria-label="Show full reference">▾</span><div class="ref-full open">' + esc(ref.citation) + urlLine + '</div>' : '';
+      return '<li data-ref-i="' + ref.i + '">' + num + labelHtml + arrow +
+        '<span class="tr-ref-inline"><label><input type="checkbox" class="tr-ref-approve" data-target="' + esc(target) + '" data-i="' + ref.i + '" ' + (checked === true ? 'checked' : '') + '> approve</label>' +
+        '<label><input type="checkbox" class="tr-ref-reject" data-target="' + esc(target) + '" data-i="' + ref.i + '" ' + (checked === false ? 'checked' : '') + '> reject</label></span></li>';
+    }).join('') + '</ul>';
   }
   function wireRefCheckboxes(container) {
     container.querySelectorAll('.tr-ref-approve').forEach(function(cb) {
@@ -227,7 +347,7 @@ TEAM_JS = '''
   }
   document.getElementById('tr-review-refs-btn').addEventListener('click', function() {
     var panel = document.getElementById('tr-multiref-panel');
-    if (panel.style.display !== 'none') { panel.style.display = 'none'; return; }
+    if (panel.style.display !== 'none') { panel.style.display = 'none'; this.classList.remove('active'); return; }
     var sel = selectedTargets();
     if (!sel.length) { alert('Select at least one object first (checkbox column on the left of the table).'); return; }
     panel.innerHTML = sel.map(function(t) {
@@ -237,6 +357,7 @@ TEAM_JS = '''
     }).join('');
     wireRefCheckboxes(panel);
     panel.style.display = 'block';
+    this.classList.add('active');
   });
 
   function collectSubmission() {
@@ -245,7 +366,7 @@ TEAM_JS = '''
     var haslist = (document.querySelector('input[name="tr-haslist"]:checked') || {}).value || null;
     var perObject = Object.keys(teamData).filter(function(t) {
       var d = teamData[t];
-      return d.comment || d.hasData || d.revisit || Object.keys(d.refApprovals).length || d.newRefs.length;
+      return d.comment || d.hasData || d.revisit || d.qcode || Object.keys(d.refApprovals).length || d.newRefs.length;
     }).map(function(t) { return Object.assign({target: t}, teamData[t]); });
     return {
       initials: initials, email: document.getElementById('tr-email').value.trim(),
@@ -272,10 +393,10 @@ TEAM_JS = '''
       '<tr><td><b>Additional list?</b></td><td>' + esc(s.hasAdditionalList || '(not answered)') + (s.additionalListUrl ? ' &mdash; ' + esc(s.additionalListUrl) : '') + '</td></tr>' +
       '</tbody></table>';
     if (s.objects.length) {
-      html += '<table class="ao-table" style="margin-top:10px;"><thead><tr><th>Object</th><th>Comment</th><th>Have data</th><th>Re-visit</th><th>References</th></tr></thead><tbody>' +
+      html += '<table class="ao-table" style="margin-top:10px;"><thead><tr><th>Object</th><th>Comment</th><th>Have data</th><th>Re-visit</th><th>Qcode</th><th>References</th></tr></thead><tbody>' +
         s.objects.map(function(o) {
           return '<tr><td>' + esc(o.target) + '</td><td>' + (o.comment ? esc(o.comment) : '&mdash;') + '</td><td>' + (o.hasData ? 'Yes' : '&mdash;') +
-            '</td><td>' + (o.revisit ? 'Yes' : '&mdash;') + '</td><td>' + refSummary(o) + '</td></tr>';
+            '</td><td>' + (o.revisit ? 'Yes' : '&mdash;') + '</td><td>' + (o.qcode ? esc(o.qcode) : '&mdash;') + '</td><td>' + refSummary(o) + '</td></tr>';
         }).join('') + '</tbody></table>';
     } else {
       html += '<div class="tr-hint" style="margin-top:10px;">No per-object edits yet &mdash; click into an object to add comments, mark data, or review references.</div>';
@@ -301,14 +422,24 @@ TEAM_JS = '''
     revisit: 'entry.1209227406',
     references: 'entry.1438340613',
     newRefs: 'entry.819246442',
+    qcode: 'entry.1407087598',
   };
   function refsPlainText(o) {
-    var app = Object.keys(o.refApprovals).filter(function(i) { return o.refApprovals[i] === true; }).length;
-    var rej = Object.keys(o.refApprovals).filter(function(i) { return o.refApprovals[i] === false; }).length;
+    // Log which references, not just a count - a count alone isn't enough
+    // to apply these decisions back to the catalog later without reopening
+    // every object's card to guess which reference the reviewer meant.
+    var row = DATA.filter(function(r) { return r.target === o.target; })[0] || {};
+    var refs = row.refs || [];
+    var approved = [], rejected = [];
+    Object.keys(o.refApprovals).forEach(function(i) {
+      var label = (refs[i] || {}).label || ('reference ' + (parseInt(i, 10) + 1));
+      if (o.refApprovals[i] === true) approved.push(label);
+      else if (o.refApprovals[i] === false) rejected.push(label);
+    });
     var parts = [];
-    if (app) parts.push(app + ' approved');
-    if (rej) parts.push(rej + ' rejected');
-    return parts.join(', ');
+    if (approved.length) parts.push('Approved: ' + approved.join('; '));
+    if (rejected.length) parts.push('Rejected: ' + rejected.join('; '));
+    return parts.join(' | ');
   }
   function newRefsPlainText(o) {
     return (o.newRefs || []).map(function(r) {
@@ -333,17 +464,61 @@ TEAM_JS = '''
       body.set(GFORM_ENTRIES.revisit, o && o.revisit ? 'Yes' : '');
       body.set(GFORM_ENTRIES.references, o ? refsPlainText(o) : '');
       body.set(GFORM_ENTRIES.newRefs, o ? newRefsPlainText(o) : '');
+      body.set(GFORM_ENTRIES.qcode, o ? (o.qcode || '') : '');
       return fetch(GFORM_URL, {method: 'POST', mode: 'no-cors', body: body});
-    })).then(function() { status.textContent = 'Submitted ' + rows.length + ' row(s) – thank you! You can keep editing and submit again any time.'; })
-      .catch(function() { status.textContent = 'Submission failed – check your connection and try again.'; });
+    })).then(function() {
+      status.textContent = 'Submitted ' + rows.length + ' row(s) – thank you! Form is reset and ready for your next search (initials/email kept).';
+      Object.keys(teamData).forEach(function(t) { delete teamData[t]; });
+      document.getElementById('tr-comment').value = '';
+      document.querySelectorAll('input[name="tr-haslist"]').forEach(function(r) { r.checked = false; });
+      document.getElementById('tr-haslist-yes-box').style.display = 'none';
+      document.getElementById('tr-haslist-url').value = '';
+      document.getElementById('tr-multiref-panel').style.display = 'none';
+      document.getElementById('tr-preview-out').style.display = 'none';
+      document.getElementById('tr-bulk-status').textContent = '';
+      ['tr-apply-hasdata', 'tr-apply-revisit', 'tr-apply-approve-refs', 'tr-review-refs-btn'].forEach(function(id) { document.getElementById(id).classList.remove('active'); });
+      try { localStorage.removeItem(TR_STORAGE_KEY); } catch (e) {}
+      render();
+      updateSelCount();
+    }).catch(function() { status.textContent = 'Submission failed – check your connection and try again.'; });
   });
+
+  // Instead of re-listing an object's references in a second, separate
+  // block, inject approve/reject controls directly onto the numbered
+  // reference list the dashboard's own openModal already renders (each
+  // <li> carries data-ref-i pointing back to its index in refsFull; the
+  // pinned SBDB entry is data-ref-i="-1" and is skipped, since it isn't a
+  // matched reference to approve/reject). Keeps the same [N] numbering,
+  // link, and expand-arrow the public dashboard uses - only the checkboxes
+  // are new.
+  function augmentRefList(target, body) {
+    var d = td(target);
+    var items = body.querySelectorAll('.pub-list li[data-ref-i]');
+    items.forEach(function(li) {
+      var i = li.getAttribute('data-ref-i');
+      if (i === '-1') return;
+      var checked = d.refApprovals[i];
+      var span = document.createElement('span');
+      span.className = 'tr-ref-inline';
+      span.innerHTML =
+        ' <label><input type="checkbox" class="tr-ref-approve" data-target="' + esc(target) + '" data-i="' + i + '" ' + (checked === true ? 'checked' : '') + '> approve</label>' +
+        '<label><input type="checkbox" class="tr-ref-reject" data-target="' + esc(target) + '" data-i="' + i + '" ' + (checked === false ? 'checked' : '') + '> reject</label>' +
+        '<span class="fl-help" tabindex="0" data-tip="Approve if this reference correctly applies to this object; reject if it looks wrong.">i</span>';
+      li.appendChild(span);
+      // In review mode, show the full citation right away - no click needed
+      // to verify a reference actually applies to the object.
+      var expandIcon = li.querySelector('.ref-expand'), fullDiv = li.querySelector('.ref-full');
+      if (expandIcon) expandIcon.classList.add('open');
+      if (fullDiv) fullDiv.classList.add('open');
+    });
+    wireRefCheckboxes(body);
+  }
 
   // -- per-object Team Review section, appended into the existing object modal --
   var _origOpenModal = openModal;
   openModal = function(target) {
     _origOpenModal(target);
     var d = td(target);
-    var refsHtml = refsHtmlFor(target);
 
     var body = document.getElementById('ao-modal-body');
 
@@ -351,30 +526,66 @@ TEAM_JS = '''
     // (not at the very bottom) so a one-object review doesn't need scrolling
     // past the full reference list just to leave a comment or flag it.
     var quickHtml = '<div class="tr-modal-quick">' +
+      '<div class="tr-modal-statusrow"><button class="toggle-btn' + (d.selected ? ' active' : '') + '" id="tr-modal-select">' + (d.selected ? '✓ Selected for review' : 'Select this object for review') + '</button>' +
+      '<span id="tr-modal-status" class="tr-hint"></span></div>' +
       '<div class="tr-field"><label>Comment <span class="fl-help" tabindex="0" data-tip="Add here any comments about the data">i</span></label>' +
       '<textarea id="tr-modal-comment" rows="1">' + esc(d.comment) + '</textarea></div>' +
       '<label><input type="checkbox" id="tr-modal-hasdata" ' + (d.hasData ? 'checked' : '') + '> I have data for this object</label>' +
       '<label><input type="checkbox" id="tr-modal-revisit" ' + (d.revisit ? 'checked' : '') + '> Add to Re-visit list</label>' +
+      '<label>Qcode <span class="fl-help" tabindex="0" data-tip="Suggest a corrected quality code, 1 (poor) to 5 (excellent)">i</span> ' +
+      '<select id="tr-modal-qcode" style="width:auto;display:inline-block;padding:2px 6px;">' +
+      '<option value="">&ndash;</option>' + [1, 2, 3, 4, 5].map(function(n) { return '<option value="' + n + '" ' + (String(d.qcode) === String(n) ? 'selected' : '') + '>' + n + '</option>'; }).join('') +
+      '</select></label>' +
       '</div>';
     var modalTop = body.querySelector('.ao-modal-top');
-    if (modalTop) { modalTop.insertAdjacentHTML('afterend', quickHtml); } else { body.innerHTML += quickHtml; }
+    if (modalTop) { modalTop.insertAdjacentHTML('afterend', quickHtml); } else { body.insertAdjacentHTML('beforeend', quickHtml); }
 
-    body.innerHTML += '<div class="tr-modal-section">' +
-      '<h4>Reference verification</h4>' + refsHtml +
-      '<div style="margin-top:8px;"><span class="fl-help term-help" tabindex="0" data-tip="Preferred: a DOI. If you don\\u2019t have one, the first author\\u2019s last name, publication year if known, or a topic/title so we can find it.">Add a new reference</span>' +
+    // Live status line: makes it explicit that field edits are captured
+    // in this browser tab as soon as they're typed/checked (no separate
+    // save button - same as the comment box always worked), and exactly
+    // what will go out when the main Submit button is clicked.
+    function updateCardStatus() {
+      var touched = d.comment || d.hasData || d.revisit || d.qcode || Object.keys(d.refApprovals).length || d.newRefs.length;
+      document.getElementById('tr-modal-status').innerHTML = touched
+        ? '✓ Saved in this browser tab &mdash; will be sent to the shared Sheet when you click <b>Submit</b> below.'
+        : 'No edits yet for this object.';
+    }
+    updateCardStatus();
+    document.getElementById('tr-modal-select').addEventListener('click', function() {
+      d.selected = !d.selected;
+      this.classList.toggle('active', d.selected);
+      this.textContent = d.selected ? '✓ Selected for review' : 'Select this object for review';
+      var tableCb = document.querySelector('.tr-row-select[data-target="' + CSS.escape(target) + '"]');
+      if (tableCb) { tableCb.checked = d.selected; tableCb.closest('tr').classList.toggle('tr-selected', d.selected); }
+      updateSelCount();
+    });
+
+    augmentRefList(target, body);
+
+    // insertAdjacentHTML (not body.innerHTML +=) - the += form re-parses the
+    // ENTIRE body, silently destroying every listener attached to existing
+    // children (the Select button above, and the reference approve/reject
+    // checkboxes from augmentRefList) even though they keep looking correct
+    // afterward, since serialized HTML round-trips structure but not
+    // listeners. This was a real, previously-undetected bug.
+    body.insertAdjacentHTML('beforeend', '<div class="tr-modal-section">' +
+      '<span class="fl-help term-help" tabindex="0" data-tip="Preferred: a DOI. If you don\\u2019t have one, the first author\\u2019s last name, publication year if known, or a topic/title so we can find it.">Add a new reference</span>' +
       '<div class="tr-newref-grid">' +
       '<input type="text" id="tr-newref-doi" placeholder="DOI (preferred)">' +
       '<input type="text" id="tr-newref-author" placeholder="First author last name">' +
       '<input type="text" id="tr-newref-year" placeholder="Year (if known)">' +
       '<input type="text" id="tr-newref-topic" placeholder="Topic / title (if no DOI/author)">' +
       '</div><button class="toggle-btn" id="tr-add-newref" style="margin-top:8px;">Add reference to this object\\u2019s card</button>' +
-      '<div id="tr-newref-list" style="margin-top:6px;font-size:12px;"></div></div>' +
-      '</div>';
+      '<div id="tr-newref-list" style="margin-top:6px;font-size:12px;"></div>' +
+      '</div>');
 
-    document.getElementById('tr-modal-comment').addEventListener('input', function(e) { d.comment = e.target.value; });
-    document.getElementById('tr-modal-hasdata').addEventListener('change', function(e) { d.hasData = e.target.checked; });
-    document.getElementById('tr-modal-revisit').addEventListener('change', function(e) { d.revisit = e.target.checked; });
-    wireRefCheckboxes(body);
+    document.getElementById('tr-modal-comment').addEventListener('input', function(e) { d.comment = e.target.value; updateCardStatus(); });
+    document.getElementById('tr-modal-hasdata').addEventListener('change', function(e) { d.hasData = e.target.checked; updateCardStatus(); });
+    document.getElementById('tr-modal-revisit').addEventListener('change', function(e) { d.revisit = e.target.checked; updateCardStatus(); });
+    document.getElementById('tr-modal-qcode').addEventListener('change', function(e) { d.qcode = e.target.value; updateCardStatus(); });
+    body.addEventListener('change', function(e) {
+      if (e.target.classList.contains('tr-ref-approve') || e.target.classList.contains('tr-ref-reject')) updateCardStatus();
+    });
     document.getElementById('tr-add-newref').addEventListener('click', function() {
       var ref = {
         doi: document.getElementById('tr-newref-doi').value.trim(),
@@ -386,6 +597,7 @@ TEAM_JS = '''
       d.newRefs.push(ref);
       document.getElementById('tr-newref-list').textContent = d.newRefs.length + ' new reference(s) queued for this object.';
       ['doi', 'author', 'year', 'topic'].forEach(function(f) { document.getElementById('tr-newref-' + f).value = ''; });
+      updateCardStatus();
     });
   };
 '''
